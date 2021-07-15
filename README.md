@@ -3,8 +3,6 @@
 ## Usage
 
 
-## Usage
-
 ### Requirements
 * Python 3
 * torch
@@ -49,7 +47,7 @@ estimations = agent.explore(n_steps, n_samples)
 ### Approximation error versus time
 ![Estimation error benchmark](results/benchmark.png )
 
-## Reference 
+## References
 Our algorithm is based on that of Wagenmaker *et al.* :
 
 Andrew Wagenmaker, & Kevin Jamieson. (2020). Active Learning for Identification of Linear Dynamical Systems. 
