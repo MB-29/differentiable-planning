@@ -14,4 +14,5 @@ class BoundedControl(nn.Module):
         self.net = net
 
     def forward(self, x):
-        return self.gamma * self.net(x) / torch.norm(self.net(x), dim=1).unsqueeze(1)
+        output = self.net(x)
+        return self.gamma * output / torch.norm(output, dim=1).unsqueeze(1)

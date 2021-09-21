@@ -1,14 +1,22 @@
 from mpl_toolkits.mplot3d import Axes3D
 import os
 
+from torchdyn.models.utils import DepthCat
+
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
+import numpy as np
 import torch
+import torch.nn as nn
 import matplotlib.pyplot as plt
 import pytorch_lightning as pl
+from torchdyn.models import NeuralDE
 
-class Controller(pl.LightningModule):
-    def __init__(self, A, control, d, T, gamma, sigma, criterion='A-optimality'):
+from dynamics import Dynamics
+
+
+class NeuralController(pl.LightningModule):
+    def __init__(self, A, control, d, T, gamma, sigma, method, criterion='A-optimality'):
         super().__init__()
         self.control = control
         self.T = T
@@ -24,50 +32,39 @@ class Controller(pl.LightningModule):
         }
         self.loss_function = loss_map[criterion]
 
+        self.U = torch.randn(self.T, self.d, requires_grad=True)
+
+        self.method = method
+
 
     def forward(self, x):
+        return self.play_dynamics(x, self.A, self.sigma)
+
+    def play_control(self, x, A):
+        return self.play_dynamics(x, A, self.sigma)
+
+    def play_dynamics(self, x, A, sigma):
         batch_size = x.shape[0]
         X = torch.zeros(batch_size, self.T, self.d)
         U = torch.zeros(batch_size, self.T, self.d)
         for t in range(self.T-1):
             time = torch.full((batch_size, 1), t)
-            time_position = torch.cat((x, time), dim=1)
-            control = self.control(time_position)
-            x = (self.A @ x.T).T + control + self.sigma * torch.randn_like(x)
-            U[:, t, :] = control
+            position_time = torch.cat((x, time), dim=1)
+            u = self.control(position_time)
+            x = (A @ x.T).T + u
+            if sigma > 0:
+                x += self.sigma * torch.randn_like(x)
             X[:, t+1, :] = x
+            U[:, t, :] = u
         return X, U
 
-    def play(self, x, A):
-        batch_size = x.shape[0]
-        X = torch.zeros(batch_size, self.T, self.d)
-        U = torch.zeros(batch_size, self.T, self.d)
-        for t in range(self.T-1):
-            time = torch.full((batch_size, 1), t)
-            time_position = torch.cat((x, time), dim=1)
-            # control = self.control(time_position)
-            control = self.control(time_position)
-            x = (A @ x.T).T + control + self.sigma * torch.randn_like(x)
-            U[:, t, :] = control
-            X[:, t+1, :] = x
-        return X, U
-
-    def play_random(self, x, A, gamma):
-        batch_size = x.shape[0]
-        X = torch.zeros(batch_size, self.T, self.d)
-        U = torch.zeros(batch_size, self.T, self.d)
-        for t in range(self.T-1):
-            control = gamma*torch.randn_like(x) / self.d
-            x = (A @ x.T).T + control + self.sigma * torch.randn_like(x)
-            U[:, t, :] = control
-            X[:, t+1, :] = x
-        return X, U
+        
     
     def trajectory_control(self, X):
         batch_size = X.shape[0]
         time_values = torch.linspace(0, self.T-1, self.T).unsqueeze(1).expand(batch_size, self.T, 1)
-        time_position = torch.cat((X, time_values), dim=2)
-        return self.control(time_position)
+        position_time = torch.cat((X, time_values), dim=2)
+        return self.control(position_time)
     
     def A_loss(self, S):
         return self.T * (1/S**2).sum(dim=1).mean()
@@ -80,7 +77,9 @@ class Controller(pl.LightningModule):
         batch_size = X.shape[0]
         # X_ = torch.ones(batch_size, self.T, 2*self.d)
         # X_[:, :, :self.d] = X
-        S = torch.linalg.svdvals(X)
+
+        # S = torch.linalg.svdvals(X)
+
         # S = torch.pca_lowrank(X)
         # S = torch.linalg.svdvals(X)
         # regularization = self.T * self.alpha * torch.sqrt(torch.mean(control_values[:, :, :]**2))
@@ -89,7 +88,10 @@ class Controller(pl.LightningModule):
         # loss =  - torch.min(S, dim=1).values.mean() / self.T
         # loss =  self.T * (1/S**2).sum(dim=1).mean()
         # loss =  - S[:, -1].mean() / self.T 
-        loss = self.loss_function(S)
+
+        # loss = self.loss_function(S)
+        design_matrix = X.permute(0, 2, 1) @ X
+        loss =  -torch.log(torch.det(design_matrix)).mean()
 
         # loss += penalty
         # self.log("loss", loss)

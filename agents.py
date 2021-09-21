@@ -6,7 +6,8 @@ import numpy as np
 import os
 from retry import retry
 
-from controller import Controller
+from controller import NeuralController
+from discrete_controller import DiscreteController
 
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
@@ -17,9 +18,9 @@ def estimate(X, U):
     return A_hat
 
 class Agent:
-    def __init__(self, A, control, T, d, gamma, sigma=1, batch_size=20, n_epochs=100):
+    def __init__(self, A, control, T, d, gamma, method, sigma=1, batch_size=20, n_gradient=100):
         self.A = A
-        self.controller = Controller(A, control, d, T, gamma=gamma, sigma=sigma)
+        self.controller = DiscreteController(A, control, d, T, gamma=gamma, sigma=sigma, method=method)
 
 
         self.gamma = gamma
@@ -28,34 +29,42 @@ class Agent:
         self.control = control  
         self.T = T
         self.d = d
-        self.dataset = torch.zeros((100, d))
-        self.n_epochs = n_epochs
-        self.batch_size = batch_size
+        self.batch_size = 16
+        self.n_gradient = n_gradient
+        self.dataset = torch.zeros((self.batch_size*n_gradient, d))
 
         self.x_data = []
         self.y_data = []
 
         self.estimations = []
+        self.method = method
+        architecture = method.split('-')[1]
+        controllers = {
+            'AD': DiscreteController,
+            'random': DiscreteController,
+            'adjoint': DiscreteController,
+            'neural': NeuralController
+            }
+        self.controller_constructor = controllers[architecture]
 
     
     def plan(self, A_hat, T):
         # self.reset_weights()
-        self.controller = Controller(
+        self.controller = self.controller_constructor(
             A_hat,
             self.control,
             self.d,
-            T, 
+            T,
+            method=self.method,
             gamma=self.gamma,
             sigma=self.sigma
             )
 
         train_dataloader = DataLoader(
             self.dataset, batch_size=self.batch_size, shuffle=True)
-        max_epochs  =  max(200, self.n_epochs * self.T)
-        max_epochs  =  self.n_epochs 
+        # max_epochs  =  max(200, self.n_epochs * self.T)
         trainer = pl.Trainer(
-            min_epochs=10,
-            max_epochs=max_epochs,
+            max_epochs=1,
             checkpoint_callback=False
         )
         
@@ -77,8 +86,10 @@ class Agent:
         # self.Y = torch.Tensor(self.y_data)
         # solution = torch.linalg.lstsq(self.X, self.Y).solution.permute(0, 2, 1)
         # self.A_hat = solution.mean(dim=0)
-        self.batch = torch.zeros(n_samples, self.d)
-        X, U = self.controller.play(self.batch, self.A)
+        with torch.no_grad():
+            self.batch = torch.zeros(n_samples, self.d)
+            X, U = self.controller.play_control(self.batch, self.A)
+        print(f'played control of energy {torch.norm(U[0, :, :])**2 / self.T}')
         return X, U
 
     def update(self, X, U):
@@ -88,14 +99,21 @@ class Agent:
         self.estimations.append(estimations.detach().clone().numpy())
 
     def reset_weights(self):
-        self.controller = Controller(self.A_hat, self.control, self.d, self.T, gamma=self.gamma, sigma=self.sigma)
+        self.controller = self.controller_constructor(
+            self.A_hat,
+            self.control,
+            self.d,
+            self.T,
+            method=self.method,
+            gamma=self.gamma,
+            sigma=self.sigma
+            )
         for layer in self.control.net:
             if not hasattr(layer, 'reset_parameters'):
                 return
             layer.reset_parameters()
 
-
-    def explore(self, n_steps, n_samples):
+    def identify(self, n_steps, n_samples):
         self.initialize(n_samples)
         self.gamma_sq_values = np.zeros(n_steps)
         for step_index in range(n_steps):
@@ -116,11 +134,7 @@ class Agent:
         self.estimations.append(estimations.detach().clone().numpy())
 
 
-
 class Random(Agent):
-
-    def __init__(self, A, control, T, d, gamma, sigma, n_epochs):
-        super().__init__(A, control, T, d, gamma=gamma, sigma=sigma, n_epochs=n_epochs)
 
     def timestep(self, n_samples):
         self.reset_weights()

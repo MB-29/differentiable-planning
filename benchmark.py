@@ -6,6 +6,7 @@ import torch.nn as nn
 from torch.utils.data.dataloader import DataLoader
 import pytorch_lightning as pl
 from matplotlib import rc, rcParams
+from torchdyn.models.utils import DepthCat
 from tqdm import tqdm 
 import logging 
 
@@ -19,14 +20,26 @@ rc('text.latex', preamble=[r'\usepackage{amsmath}', r'\usepackage{amsfonts}'])
 
 logging.getLogger("pytorch_lightning").setLevel(0)
 
-T = 5
-n_samples = 1000
-n_steps = 5
+T0 = 5
+n_samples = 500
+n_epochs = 3
 gamma = 1
-sigma = 0.1
-n_epochs = 200
+sigma = 0.5
+n_gradient = 4000
 
 A = torch.randn(3, 3)
+A = torch.tensor([
+
+    [0.9, 1, 0, 0],
+    [0, 0.9, 1, 0],
+    [0, 0, 0.9, 1],
+    [0, 0, 0, 0.9],
+])
+# A = torch.tensor([
+#     [0.9, 1],
+#     [0, 0.9]
+# ])
+# A = torch.zeros(2, 2)
 
 d = A.shape[0]
 
@@ -37,24 +50,40 @@ net = nn.Sequential(
 )
 
 agent_map = {
-    'active': Active,
-    'random': Random,
-    'oracle': Oracle
+    # 'discrete-active': Active,
+    '-random': Random,
+    # 'D-adjoint oracle': Oracle,
+    'D-AD oracle': Oracle,
+    'D-neural oracle': Oracle,
+    # 'D-neural active': Active,
+    # 'D-AD active': Active,
+    # 'A-AD oracle': Oracle,
+    # 'E-AD oracle': Oracle
 }
 color_map = {
     'active': 'darkblue',
     'random': 'darkred',
-    'oracle': 'darkgreen'
+    'oracle': 'darkgreen',
+    'adjoint': 'purple'
 }
 
-gamma_sq_values = np.zeros(n_steps)
+gamma_sq_values = np.zeros(n_epochs)
 
 agent_outputs = {}
 for agent_name, agent_contructor in agent_map.items():
     print(f'agent {agent_name}')
+    method = agent_name.split(' ')[0]
     control = BoundedControl(net, gamma)
-    agent = agent_contructor(A, control, T, d, gamma=gamma, sigma=sigma, n_epochs=n_epochs)
-    estimations = agent.explore(n_steps, n_samples)
+    agent = agent_contructor(
+        A,
+        control,
+        T0,
+        d,
+        gamma=gamma,
+        sigma=sigma,
+        n_gradient=n_gradient,
+        method=method)
+    estimations = agent.identify(n_epochs, n_samples)
     residual = A.numpy() - estimations
     error_values = np.linalg.norm(residual, axis=(2, 3)).T
     if agent_name == 'active':
@@ -63,17 +92,16 @@ for agent_name, agent_contructor in agent_map.items():
     agent_outputs[agent_name] = error_values
 
 
-oracle_mean = np.mean(agent_outputs['oracle'], axis=0)
 for agent_name, error_values in agent_outputs.items():
-    color = color_map[agent_name]
+    color = color_map.get(agent_name, 'black')
     mean = np.mean(error_values, axis=0)
     std = np.sqrt(np.var(error_values, axis=0) / n_samples)
-    plt.errorbar(np.arange(n_steps+1), mean[:], yerr=3 *std[:], label=agent_name, alpha=0.5, color=color)
+    plt.errorbar(np.arange(n_epochs+1), mean[:], yerr=3 *std[:], label=agent_name, alpha=0.7)
 
 plt.yscale('log')
 plt.xlabel('epoch')
 plt.ylabel('estimation error')
-plt.title(r'estimation of randomly generated A of dimension 3')
+plt.title(r'A Jordan block of dimension 4')
 
 plt.legend()
 plt.show()
