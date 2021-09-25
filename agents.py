@@ -16,15 +16,13 @@ def estimate(X, U):
     return A_hat
 
 class Agent:
-    def __init__(self, A, control, T, d, gamma, method, sigma, n_gradient=100):
+    def __init__(self, A, T, d, gamma, method, sigma, n_gradient=100):
         self.A = A
-        self.controller = DiscreteController(A, control, d, T, gamma=gamma, sigma=sigma, method=method)
-
+        self.controller = DiscreteController(A, d, T, gamma=gamma, sigma=sigma, method=method)
 
         self.gamma = gamma
         self.sigma = sigma
 
-        self.control = control  
         self.T = T
         self.d = d
         self.batch_size = 16
@@ -50,7 +48,6 @@ class Agent:
         # self.reset_weights()
         self.controller = self.controller_constructor(
             A_hat,
-            self.control,
             self.d,
             T,
             method=self.method,
@@ -105,20 +102,6 @@ class Agent:
         # self.estimations.append(self.A_hat.unsqueeze(0).clone().numpy())
         self.estimations.append(estimation.copy().reshape((1, self.d, self.d)))
 
-    def reset_weights(self):
-        self.controller = self.controller_constructor(
-            self.A_hat,
-            self.control,
-            self.d,
-            self.T,
-            method=self.method,
-            gamma=self.gamma,
-            sigma=self.sigma
-            )
-        for layer in self.control.net:
-            if not hasattr(layer, 'reset_parameters'):
-                return
-            layer.reset_parameters()
 
     def identify(self, n_steps):
         self.initialize()
@@ -146,8 +129,6 @@ class Agent:
 class Random(Agent):
 
     def timestep(self):
-        self.reset_weights()
-        # self.collect(self.T)
         X, U = self.play()
         self.update(X.squeeze(), U.squeeze())
     
