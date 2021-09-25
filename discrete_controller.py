@@ -1,19 +1,14 @@
-from mpl_toolkits.mplot3d import Axes3D
 import os
 
-from torchdyn.models.utils import DepthCat
 
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
 import numpy as np
 import torch
-import torch.nn as nn
 import matplotlib.pyplot as plt
 import pytorch_lightning as pl
-from torchdyn.models import NeuralDE
 from information import Information
 
-from dynamics import Dynamics
 
 
 class DiscreteController(pl.LightningModule):

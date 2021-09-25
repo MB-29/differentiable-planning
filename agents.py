@@ -1,10 +1,7 @@
 import pytorch_lightning as pl
-import torch.nn as nn
 import torch
 from torch.utils.data.dataloader import DataLoader
-import numpy as np
 import os
-from retry import retry
 from scipy.linalg import lstsq
 
 from controller import NeuralController

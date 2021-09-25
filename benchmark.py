@@ -3,11 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import torch
 import torch.nn as nn
-from torch.utils.data.dataloader import DataLoader
-import pytorch_lightning as pl
-from matplotlib import rc, rcParams
-from torchdyn.models.utils import DepthCat
-from tqdm import tqdm 
+from matplotlib import rc
 import logging 
 
 from agents import *
