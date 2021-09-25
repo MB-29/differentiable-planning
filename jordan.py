@@ -22,7 +22,7 @@ logging.getLogger("pytorch_lightning").setLevel(0)
 
 T0 = 100
 n_samples = 5
-n_epochs = 3
+n_epochs = 1
 gamma = 1
 sigma = 0.1
 n_gradient = 250

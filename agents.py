@@ -56,11 +56,16 @@ class Agent:
             )
 
         train_dataloader = DataLoader(
-            self.dataset, batch_size=self.batch_size, shuffle=True)
+            self.dataset,
+            batch_size=self.batch_size,
+            shuffle=True
+            )
         # max_epochs  =  max(200, self.n_epochs * self.T)
         trainer = pl.Trainer(
             max_epochs=1,
-            checkpoint_callback=False
+            checkpoint_callback=False,
+            progress_bar_refresh_rate=0
+
         )
         
         trainer.fit(self.controller, train_dataloader)
