@@ -12,9 +12,8 @@ from information import Information
 
 
 class DiscreteController(pl.LightningModule):
-    def __init__(self, A, control, d, T, gamma, sigma, method):
+    def __init__(self, A, d, T, gamma, sigma, method):
         super().__init__()
-        self.control = control
         self.T = T
         self.A = A
         self.d = d
@@ -70,11 +69,6 @@ class DiscreteController(pl.LightningModule):
         #     X[:, t+1, :] = x
         # return X, U
     
-    def trajectory_control(self, X):
-        batch_size = X.shape[0]
-        time_values = torch.linspace(0, self.T-1, self.T).unsqueeze(1).expand(batch_size, self.T, 1)
-        position_time = torch.cat((X, time_values), dim=2)
-        return self.control(position_time)
     
     def A_loss(self, S):
         return self.T * (1/S**2).sum(dim=1).mean()
@@ -127,8 +121,6 @@ class DiscreteController(pl.LightningModule):
         if close:
             plt.close()
     
-    # def configure_optimizers(self):
-    #     return torch.optim.Adam(self.control.parameters(), lr=0.005)
     def configure_optimizers(self):
         return torch.optim.Adam([self.U], lr=0.005)
     

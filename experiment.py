@@ -35,7 +35,6 @@ class Experiment:
                 control = BoundedControl(net, self.gamma)
                 agent = agent_contructor(
                     self.A,
-                    control,
                     self.T0,
                     self.d,
                     gamma=self.gamma,
