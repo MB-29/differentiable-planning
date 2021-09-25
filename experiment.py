@@ -1,6 +1,6 @@
-from os import name
 import numpy as np
 from tqdm import tqdm
+import torch.nn as nn
 
 from agents import *
 from controls import BoundedControl
