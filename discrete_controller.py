@@ -27,45 +27,44 @@ class DiscreteController(pl.LightningModule):
         self.gamma = gamma
         self.sigma = sigma
 
-        self.U = torch.randn(self.T-1, self.d, requires_grad=True)
+        self.U = torch.randn(self.T, self.d, requires_grad=True)
 
         training_steps = {
             'D-AD': self.training_step_D,
             'E-AD': self.training_step_E,
             'A-AD': self.training_step_A,
+            'T-AD': self.training_step_T,
             'D-adjoint': self.training_step_adjoint
         }
 
         self.training_step = training_steps.get(method)
 
-        print(f'controller with method {method}')
+        # print(f'controller with method {method}')
 
     def forward(self, x):
         U = self.gamma * np.sqrt(self.T) * self.U / torch.norm(self.U)
-        return self.play_dynamics(x, self.A, U, 0)
+        return self.play_dynamics(x, self.A, U, 0), U
 
-    def play_dynamics(self, x, A, control_values, sigma):
+    def play_dynamics(self, x, A, U, sigma):
         batch_size = x.shape[0]
-        X = torch.zeros(batch_size, self.T, self.d)
-        U = torch.zeros(batch_size, self.T, self.d)
-        for t in range(self.T-1):
-            u =  control_values[t, :] 
+        X = torch.zeros(batch_size, self.T+1, self.d)
+        for t in range(self.T):
+            u =  U[t, :] 
             x = (A @ x.T).T + u 
             if sigma > 0:
                 x += self.sigma * torch.randn_like(x)
             X[:, t+1, :] = x
-            U[:, t, :] = u
         # print(f'energy {torch.norm(U[0])}')
-        return X, U
+        return X
 
     def play_control(self, x, A):
         U = self.gamma * np.sqrt(self.T) * self.U / torch.norm(self.U)
         # print(f'playing control of energy {torch.norm(U)**2 / self.T}')
-        return self.play_dynamics(x, A, U, self.sigma)
+        return self.play_dynamics(x, A, U, self.sigma), U
 
     def play_random(self, x, A, gamma):
-        control_values = torch.randn_like(x) / np.sqrt(self.d)
-        return self.play_dynamics(x, A, control_values, self.sigma)
+        U = self.gamma * torch.randn(self.T, self.d) / np.sqrt(self.d)
+        return self.play_dynamics(x, A, U, self.sigma), U
         # batch_size = x.shape[0]
         # X = torch.zeros(batch_size, self.T, self.d)
         # U = torch.zeros(batch_size, self.T, self.d)
@@ -88,10 +87,15 @@ class DiscreteController(pl.LightningModule):
     def G_loss(self, S):
         return - S[:, -1].mean() / self.T
 
+    def training_step_T(self, batch, batch_idx):
+        X, control_values = self.forward(batch)
+        S = torch.linalg.svdvals(X)
+        loss = - (1/self.d) * (1/self.T) * S.sum(dim=1).mean()
+        return loss
     def training_step_A(self, batch, batch_idx):
         X, control_values = self.forward(batch)
         S = torch.linalg.svdvals(X)
-        loss = - (1/self.T) * S.sum(dim=1).mean()
+        loss = (self.T) * (1/S).sum(dim=1).mean()
         return loss
 
     def training_step_E(self, batch, batch_idx):

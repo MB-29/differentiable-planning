@@ -21,11 +21,10 @@ rc('text.latex', preamble=[r'\usepackage{amsmath}', r'\usepackage{amsfonts}'])
 logging.getLogger("pytorch_lightning").setLevel(0)
 
 T0 = 5
-n_samples = 500
-n_epochs = 3
+n_epochs = 10
 gamma = 1
 sigma = 0.5
-n_gradient = 4000
+n_gradient = 400
 
 A = torch.randn(3, 3)
 A = torch.tensor([
@@ -53,8 +52,8 @@ agent_map = {
     # 'discrete-active': Active,
     '-random': Random,
     # 'D-adjoint oracle': Oracle,
-    'D-AD oracle': Oracle,
-    'D-neural oracle': Oracle,
+    # 'D-AD oracle': Oracle,
+    # 'D-neural oracle': Oracle,
     # 'D-neural active': Active,
     # 'D-AD active': Active,
     # 'A-AD oracle': Oracle,
@@ -83,7 +82,7 @@ for agent_name, agent_contructor in agent_map.items():
         sigma=sigma,
         n_gradient=n_gradient,
         method=method)
-    estimations = agent.identify(n_epochs, n_samples)
+    estimations = agent.identify(n_epochs)
     residual = A.numpy() - estimations
     error_values = np.linalg.norm(residual, axis=(2, 3)).T
     if agent_name == 'active':
@@ -95,8 +94,8 @@ for agent_name, agent_contructor in agent_map.items():
 for agent_name, error_values in agent_outputs.items():
     color = color_map.get(agent_name, 'black')
     mean = np.mean(error_values, axis=0)
-    std = np.sqrt(np.var(error_values, axis=0) / n_samples)
-    plt.errorbar(np.arange(n_epochs+1), mean[:], yerr=3 *std[:], label=agent_name, alpha=0.7)
+    # std = np.sqrt(np.var(error_values, axis=0) / n_samples)
+    plt.plot(np.arange(n_epochs+1), mean[:], label=agent_name, alpha=0.7)
 
 plt.yscale('log')
 plt.xlabel('epoch')
