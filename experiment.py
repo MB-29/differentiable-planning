@@ -3,7 +3,6 @@ from tqdm import tqdm
 import torch.nn as nn
 
 from agents import *
-from controls import BoundedControl
 
 
 
@@ -22,17 +21,11 @@ class Experiment:
 
         estimations = {}
 
-        net = nn.Sequential(
-            nn.Linear(self.d+1, 16),
-            nn.Tanh(),
-            nn.Linear(16, self.d)
-        )
         for agent_name, agent_contructor in agent_map.items():
             print(f'agent {agent_name}')
             agent_estimations = np.zeros((n_samples, n_epochs+1, self.d, self.d))
             for sample_index in tqdm(range(n_samples)):
                 method = agent_name.split(' ')[0]
-                control = BoundedControl(net, self.gamma)
                 agent = agent_contructor(
                     self.A,
                     self.T0,
