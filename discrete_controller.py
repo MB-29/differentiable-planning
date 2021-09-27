@@ -58,6 +58,8 @@ class DiscreteController(pl.LightningModule):
 
     def play_random(self, x, A, gamma):
         U = self.gamma * torch.randn(self.T, self.d) / np.sqrt(self.d)
+        
+        # print(f'T = {self.T}, playing control of energy {torch.norm(U)**2 / self.T}')
         return self.play_dynamics(x, A, U, self.sigma), U
         # batch_size = x.shape[0]
         # X = torch.zeros(batch_size, self.T, self.d)
@@ -122,7 +124,7 @@ class DiscreteController(pl.LightningModule):
             plt.close()
     
     def configure_optimizers(self):
-        return torch.optim.Adam([self.U], lr=0.005)
+        return torch.optim.Adam([self.U], lr=0.01)
     
 
 

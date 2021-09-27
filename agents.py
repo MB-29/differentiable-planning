@@ -4,7 +4,7 @@ from torch.utils.data.dataloader import DataLoader
 import os
 from scipy.linalg import lstsq
 
-from controller import NeuralController
+from neural_controller import NeuralController
 from discrete_controller import DiscreteController
 
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
@@ -16,9 +16,14 @@ def estimate(X, U):
     return A_hat
 
 class Agent:
-    def __init__(self, A, T, d, gamma, method, sigma, n_gradient=100):
+    def __init__(self, A, T, d, gamma, method, sigma, n_gradient=100, net=None):
         self.A = A
         self.controller = DiscreteController(A, d, T, gamma=gamma, sigma=sigma, method=method)
+        self.net = net if net is not None else []
+        for layer in self.net:
+            if hasattr(layer, 'reset_parameters'):
+                layer.reset_parameters()
+            
 
         self.gamma = gamma
         self.sigma = sigma
@@ -46,14 +51,25 @@ class Agent:
     
     def plan(self, A_hat, T):
         # self.reset_weights()
-        self.controller = self.controller_constructor(
-            A_hat,
-            self.d,
-            T,
-            method=self.method,
-            gamma=self.gamma,
-            sigma=self.sigma
-            )
+        if self.net != [] :
+            self.controller = self.controller_constructor(
+                A_hat,
+                self.d,
+                T,
+                self.net,
+                method=self.method,
+                gamma=self.gamma,
+                sigma=self.sigma
+                )
+        else:
+            self.controller = self.controller_constructor(
+                A_hat,
+                self.d,
+                T,
+                method=self.method,
+                gamma=self.gamma,
+                sigma=self.sigma
+                )
 
         train_dataloader = DataLoader(
             self.dataset,
@@ -64,8 +80,7 @@ class Agent:
         trainer = pl.Trainer(
             max_epochs=1,
             checkpoint_callback=False,
-            progress_bar_refresh_rate=0
-
+            # progress_bar_refresh_rate=0
         )
         
         trainer.fit(self.controller, train_dataloader)
@@ -90,6 +105,14 @@ class Agent:
             self.batch = torch.zeros(1, self.d)
             X, U = self.controller.play_control(self.batch, self.A)
         # print(f'played control of energy {torch.norm(U)**2 / self.T}')
+        return X, U
+
+    def play_random(self):
+        self.batch = torch.zeros(1, self.d)
+        self.controller.T = self.T
+        X, U = self.controller.play_random(
+            self.batch, self.A, gamma=self.gamma)
+        # print(f'T = {self.T}, played control of energy {torch.norm(U)**2 / self.T}')
         return X, U
 
     def update(self, X, U):
@@ -117,17 +140,14 @@ class Agent:
             # self.gamma_sq_values[step_index] = self.gamma_sq
         return self.estimations
 
-    def play_random(self):
-        self.batch = torch.zeros(1, self.d)
-        X, U = self.controller.play_random(self.batch, self.A, gamma=self.gamma)
-        # print(f'played control of energy {torch.norm(U)**2 / self.T}')
-        return X, U
+
     
     def initialize(self):
         X, U = self.play_random()
-        estimations = estimate(X, U.unsqueeze(0)).detach()
-        self.A_hat = estimations[0]
-        self.estimations.append(estimations.detach().clone().numpy())
+        self.update(X.squeeze(), U.squeeze())
+        # estimations = estimate(X, U.unsqueeze(0)).detach()
+        # self.A_hat = estimations[0]
+        # self.estimations.append(estimations.detach().clone().numpy())
     
 
 

@@ -21,11 +21,11 @@ rc('text.latex', preamble=[r'\usepackage{amsmath}', r'\usepackage{amsfonts}'])
 logging.getLogger("pytorch_lightning").setLevel(0)
 
 T0 = 100
-n_samples = 5
-n_epochs = 1
+n_samples = 25
+n_epochs = 3
 gamma = 1
 sigma = 0.1
-n_gradient = 250
+n_gradient = 100
 
 A = torch.tensor([
 
@@ -34,23 +34,32 @@ A = torch.tensor([
     [0, 0, 0.9, 1],
     [0, 0, 0, 0.9],
 ])
+d = A.shape[0]
 
-
+net = nn.Sequential(
+    nn.Linear(d+1, 16),
+    # nn.Tanh(),
+    # nn.Linear(32, 32),
+    nn.Tanh(),
+    nn.Linear(16, d)
+)
+# net = None
 agent_map = {
     '-random': Random,
     # 'D-adjoint oracle': Oracle,
     # 'D-neural oracle': Oracle,
-    # 'D-neural active': Active,
-    # 'D-AD active': Active,
-    'E-AD active': Active,
+    'E-neural oracle': Oracle,
+    # 'E-neural active': Active,
+    #'D-AD active': Active,
+    # 'E-AD active': Active,
 
     # 'T-AD oracle': Oracle,
-    'D-AD oracle': Oracle,
-    'A-AD oracle': Oracle,
-    'E-AD oracle': Oracle,
+    #'D-AD oracle': Oracle,
+    #'A-AD oracle': Oracle,
+    # 'E-AD oracle': Oracle,
 }
 
-experiment = Experiment(A, T0, sigma, gamma)
+experiment = Experiment(A, d, T0, sigma, gamma, net=net)
 estimations = experiment.run(agent_map, n_gradient, n_epochs, n_samples)
 
 color_map = {
