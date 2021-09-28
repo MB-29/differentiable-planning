@@ -9,7 +9,7 @@
 * numpy
 * pytorch-lightning
 
-Install required packages with `pip install -r requirements.txt`.
+Install the required packages with `pip install -r requirements.txt`.
 
 
 ### Use our module
@@ -47,9 +47,9 @@ estimations = agent.explore(n_steps, n_samples)
   We obtained the following result.
 
 ### Approximation error versus epochs
-![Different criteria](results/oracles.pdf )
-![Estimation at long time](results/long_time.pdf )
-![Random matrices](results/random.pdf )
+![Different criteria](results/oracles.png )
+![Estimation at long time](results/long_time.png )
+![Random matrices](results/random.png )
 
 ## References
 Our algorithm is inspired by that of Wagenmaker *et al.* :
