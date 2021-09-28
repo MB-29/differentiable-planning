@@ -118,7 +118,7 @@ class NeuralController(pl.LightningModule):
             plt.close()
     
     def configure_optimizers(self):
-        return torch.optim.Adam(self.control.parameters(), lr=0.05)
+        return torch.optim.Adam(self.control.parameters(), lr=0.01)
     
 
 

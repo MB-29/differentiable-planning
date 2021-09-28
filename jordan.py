@@ -21,11 +21,11 @@ rc('text.latex', preamble=[r'\usepackage{amsmath}', r'\usepackage{amsfonts}'])
 logging.getLogger("pytorch_lightning").setLevel(0)
 
 T0 = 100
-n_samples = 25
-n_epochs = 3
+n_samples = 1
+n_epochs = 4
 gamma = 1
 sigma = 0.1
-n_gradient = 100
+n_gradient = 200
 
 A = torch.tensor([
 
@@ -48,8 +48,8 @@ agent_map = {
     '-random': Random,
     # 'D-adjoint oracle': Oracle,
     # 'D-neural oracle': Oracle,
-    'E-neural oracle': Oracle,
-    # 'E-neural active': Active,
+    # 'E-neural oracle': Oracle,
+    'E-neural active': Active,
     #'D-AD active': Active,
     # 'E-AD active': Active,
 
