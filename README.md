@@ -47,6 +47,7 @@ estimations = agent.explore(n_steps, n_samples)
   We obtained the following result.
 
 ### Approximation error versus epochs
+![Different criteria](results/legend.png )
 ![Different criteria](results/oracles.png )
 ![Estimation at long time](results/long_time.png )
 ![Random matrices](results/random.png )
