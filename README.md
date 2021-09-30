@@ -23,7 +23,7 @@ from agents import Active
  agent = agent_contructor(
      A,                         # dynamics matrix              
      T0,                        # initial time horizon
-     d,
+     d,                         # state space dimension
      gamma,                     # gamma**2 is the energy
      sigma,                     # size of the noise
      n_gradient,                # number of gradient steps per epoch
@@ -32,7 +32,7 @@ from agents import Active
 
 # active learning for n_steps steps, evaluating on n_samples
 estimations = agent.identify(n_epochs)
-# estimations is a list of length n_steps+1 containing numpy arrays of shape (n_samples, d, d)
+# estimations is a list of length n_steps+1 containing numpy arrays of shape (d, d)
 
 ```
 
