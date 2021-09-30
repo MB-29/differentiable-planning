@@ -20,24 +20,18 @@ from agents import Active
 
 # ... 
 
-# define a control from a neural net of input dimension d+1 and output dimension d
-control = BoundedControl(
-    net,                        # torch neural net module
-    gamma                       # control bound
-    )
-
  agent = agent_contructor(
-     A,                         # dynamics matrix
-     control,                   
-     T,                         # initial time horizon
+     A,                         # dynamics matrix              
+     T0,                        # initial time horizon
      d,
-     gamma,
+     gamma,                     # gamma**2 is the energy
      sigma,                     # size of the noise
-     n_epochs                   # number of training epochs per step
+     n_gradient,                # number of gradient steps per epoch
+     method                     # method
      )
 
 # active learning for n_steps steps, evaluating on n_samples
-estimations = agent.explore(n_steps, n_samples)
+estimations = agent.identify(n_epochs)
 # estimations is a list of length n_steps+1 containing numpy arrays of shape (n_samples, d, d)
 
 ```
