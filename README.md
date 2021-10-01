@@ -38,7 +38,10 @@ estimations = agent.identify(n_epochs)
 
 
 ## Results
-Scripts reproducing our experiments are provided in the directory `experiments`. Here are our results
+
+Scripts reproducing our experiments are provided in the directory `experiments`. Here are our results.
+
+
 ![Different criteria](results/legend.png )
 ![Different criteria](results/oracles.png )
 ![Estimation at long time](results/long_time.png )
