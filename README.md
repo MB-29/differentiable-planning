@@ -32,7 +32,7 @@ from agents import Active
 
 # active learning for n_steps steps, evaluating on n_samples
 estimations = agent.identify(n_epochs)
-# estimations is a list of length n_steps+1 containing numpy arrays of shape (d, d)
+# estimations is a list of length n_epochs+1 containing numpy arrays of shape (d, d)
 
 ```
 
