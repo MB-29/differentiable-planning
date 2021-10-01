@@ -36,11 +36,9 @@ estimations = agent.identify(n_epochs)
 
 ```
 
-## Example
-  A script comparing our differentiable programming active learning approach versus a normally-distributed baseline is provided in the file `benchmark.py`.
-  We obtained the following result.
 
-### Approximation error versus epochs
+## Results
+Scripts reproducing our experiments are provided in the directory `experiments`. Here are our results
 ![Different criteria](results/legend.png )
 ![Different criteria](results/oracles.png )
 ![Estimation at long time](results/long_time.png )
