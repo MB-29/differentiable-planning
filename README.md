@@ -20,7 +20,7 @@ from agents import Active
 
 # ... 
 
- agent = agent_contructor(
+ agent = Active(
      A,                         # dynamics matrix              
      T0,                        # initial time horizon
      d,                         # state space dimension
