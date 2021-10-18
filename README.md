@@ -27,7 +27,7 @@ from agents import Active
      gamma,                     # gamma**2 is the energy
      sigma,                     # size of the noise
      n_gradient,                # number of gradient steps per epoch
-     method                     # method
+     optimality                 # optimality criterion, e.g. 'A', 'D', 'E', or 'T'
      )
 
 # active learning for n_steps steps, evaluating on n_samples
