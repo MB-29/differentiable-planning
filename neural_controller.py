@@ -14,7 +14,7 @@ from controls import BoundedControl
 
 
 class NeuralController(pl.LightningModule):
-    def __init__(self, A, d, T, net, gamma, sigma, method, criterion='A-optimality'):
+    def __init__(self, A, d, T, net, gamma, sigma, optimality=None):
         super().__init__()
      
         self.control = BoundedControl(net, gamma)

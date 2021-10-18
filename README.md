@@ -46,8 +46,3 @@ Scripts reproducing our experiments are provided in the directory `experiments`.
 ![Different criteria](results/oracles.png )
 ![Estimation at long time](results/long_time.png )
 ![Random matrices](results/random.png )
-
-## References
-Our algorithm is inspired by that of Wagenmaker *et al.* :
-
-Andrew Wagenmaker, & Kevin Jamieson. (2020). Active Learning for Identification of Linear Dynamical Systems. 

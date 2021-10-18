@@ -10,12 +10,12 @@ from agents import *
 
 logging.getLogger("pytorch_lightning").setLevel(0)
 
-T0 = 100
-n_samples = 1
-n_epochs = 8
+T0 = 10
+n_samples = 2
+n_epochs = 3
 gamma = 1
 sigma = 0.1
-n_gradient = 250
+n_gradient = 200
 
 A = torch.tensor([
 
@@ -28,18 +28,19 @@ d = A.shape[0]
 
 # Choose agents by commenting in/out
 agent_map = {
-    '-random': Random,
+    'random': Random,
     # 'D-adjoint oracle': Oracle,
     # 'D-neural oracle': Oracle,
     # 'E-neural oracle': Oracle,
     # 'E-neural active': Active,
     #'D-AD active': Active,
-    'E-AD active': Active,
+    # 'E active': Active,
+    'D active': Active,
 
-    # 'T-AD oracle': Oracle,
-    #'D-AD oracle': Oracle,
-    #'A-AD oracle': Oracle,
-    'E-AD oracle': Oracle,
+    # 'T oracle': Oracle,
+    #'D oracle': Oracle,
+    #'A oracle': Oracle,
+    'E oracle': Oracle,
 }
 
 experiment = Experiment(A, d, T0, sigma, gamma)
@@ -52,5 +53,5 @@ for agent_name, agent_estimations in estimations.items():
     mean = np.mean(error_values, axis=0)
     std = np.sqrt(np.var(error_values, axis=0) / n_samples)
     plt.errorbar(np.arange(n_epochs+1), mean, yerr=3 *std, label=agent_name, alpha=0.7)
-
+plt.legend()
 plt.show()

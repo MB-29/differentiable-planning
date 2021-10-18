@@ -24,6 +24,7 @@ class Experiment:
         for agent_name, agent_contructor in agent_map.items():
             print(f'agent {agent_name}')
             agent_estimations = np.zeros((n_samples, n_epochs+1, self.d, self.d))
+            optimality = agent_name.split(' ')[0]
             for sample_index in tqdm(range(n_samples)):
                 method = agent_name.split(' ')[0]
                 A = self.get_A()
@@ -34,7 +35,7 @@ class Experiment:
                     gamma=self.gamma,
                     sigma=self.sigma,
                     n_gradient=n_gradient,
-                    method=method,
+                    optimality=optimality,
                     net=self.net
                     )
                 sample_estimations = np.array(agent.identify(n_epochs)).squeeze()

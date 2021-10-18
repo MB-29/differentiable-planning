@@ -16,14 +16,13 @@ def estimate(X, U):
     return A_hat
 
 class Agent:
-    def __init__(self, A, T, d, gamma, method, sigma, n_gradient=100, net=None):
+    def __init__(self, A, T, d, gamma, sigma, optimality=None, n_gradient=100, net=None):
         self.A = A
-        self.controller = DiscreteController(A, d, T, gamma=gamma, sigma=sigma, method=method)
+        self.controller = DiscreteController(A, d, T, gamma=gamma, sigma=sigma, optimality=optimality)
         self.net = net if net is not None else []
         for layer in self.net:
             if hasattr(layer, 'reset_parameters'):
                 layer.reset_parameters()
-            
 
         self.gamma = gamma
         self.sigma = sigma
@@ -38,63 +37,48 @@ class Agent:
         self.y_data = torch.zeros(1, self.d)
 
         self.estimations = []
-        self.method = method
-        architecture = method.split('-')[1]
-        controllers = {
-            'AD': DiscreteController,
-            'random': DiscreteController,
-            'adjoint': DiscreteController,
-            'neural': NeuralController
-            }
-        self.controller_constructor = controllers[architecture]
+        self.optimality = optimality
 
     
     def plan(self, A_hat, T):
         # self.reset_weights()
         if self.net != [] :
-            self.controller = self.controller_constructor(
+            self.controller = NeuralController(
                 A_hat,
                 self.d,
                 T,
                 self.net,
-                method=self.method,
+                optimality=self.optimality,
                 gamma=self.gamma,
                 sigma=self.sigma
                 )
         else:
-            self.controller = self.controller_constructor(
+            self.controller = DiscreteController(
                 A_hat,
                 self.d,
                 T,
-                method=self.method,
+                optimality=self.optimality,
                 gamma=self.gamma,
                 sigma=self.sigma
                 )
 
-        train_dataloader = DataLoader(
-            self.dataset,
-            batch_size=self.batch_size,
-            shuffle=True
-            )
-        # max_epochs  =  max(200, self.n_epochs * self.T)
-        trainer = pl.Trainer(
-            max_epochs=1,
-            checkpoint_callback=False,
-            # progress_bar_refresh_rate=0
-        )
+        # train_dataloader = DataLoader(
+        #     self.dataset,
+        #     batch_size=self.batch_size,
+        #     shuffle=True
+        #     )
+        # # max_epochs  =  max(200, self.n_epochs * self.T)
+        # trainer = pl.Trainer(
+        #     max_epochs=1,
+        #     checkpoint_callback=False,
+        #     # progress_bar_refresh_rate=0
+        # )
         
-        trainer.fit(self.controller, train_dataloader)
+        # trainer.fit(self.controller, train_dataloader)
+        
+        self.controller.plan(self.n_gradient, self.batch_size)
 
     
-    # def collect(self, T, n_samples=1):
-    #     batch = torch.zeros(n_samples, self.d)
-    #     X, U = self.controller(batch)
-    #     Y = X[:, 1:, :] - U[:, :-1, :]
-    #     for t in range(1, T-1):
-    #         self.x_data.append(X[:, t].detach().numpy())
-    #         self.y_data.append(Y[:, t].detach().numpy())
-    #     return X, U
-
     
     def play(self):
         # self.X = torch.Tensor(self.x_data)
@@ -104,7 +88,7 @@ class Agent:
         with torch.no_grad():
             self.batch = torch.zeros(1, self.d)
             X, U = self.controller.play_control(self.batch, self.A)
-        # print(f'played control of energy {torch.norm(U)**2 / self.T}')
+        print(f'played control of energy {torch.norm(U)**2 / self.T}')
         return X, U
 
     def play_random(self):
@@ -112,7 +96,7 @@ class Agent:
         self.controller.T = self.T
         X, U = self.controller.play_random(
             self.batch, self.A, gamma=self.gamma)
-        # print(f'T = {self.T}, played control of energy {torch.norm(U)**2 / self.T}')
+        print(f'T = {self.T}, played random control of energy {torch.norm(U)**2 / self.T}')
         return X, U
 
     def update(self, X, U):

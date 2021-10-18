@@ -9,10 +9,10 @@ import matplotlib.pyplot as plt
 import pytorch_lightning as pl
 from information import Information
 
-
+from criteria import criteria
 
 class DiscreteController(pl.LightningModule):
-    def __init__(self, A, d, T, gamma, sigma, method):
+    def __init__(self, A, d, T, gamma, sigma, optimality=''):
         super().__init__()
         self.T = T
         self.A = A
@@ -24,14 +24,15 @@ class DiscreteController(pl.LightningModule):
         self.U = torch.randn(self.T, self.d, requires_grad=True)
 
         training_steps = {
-            'D-AD': self.training_step_D,
-            'E-AD': self.training_step_E,
-            'A-AD': self.training_step_A,
-            'T-AD': self.training_step_T,
-            'D-adjoint': self.training_step_adjoint
+            'D': self.training_step_D,
+            'E': self.training_step_E,
+            'A': self.training_step_A,
+            'T': self.training_step_T
         }
 
-        self.training_step = training_steps.get(method)
+        self.training_step = training_steps.get(optimality)
+
+        self.criterion = criteria.get(optimality)
 
         # print(f'controller with method {method}')
 
@@ -109,6 +110,18 @@ class DiscreteController(pl.LightningModule):
         # print(torch.norm(self.U)**2 / self.T)
         loss = Information().apply(U, self.A, self.T)
         return loss
+    
+    def plan(self, n_steps, batch_size=1, learning_rate=0.1):
+        optimizer = torch.optim.Adam([self.U], lr=learning_rate)
+        for step_index in range(n_steps):
+            x = torch.zeros(batch_size, self.d)
+            X, U = self.forward(x)
+            S = torch.linalg.svdvals(X)
+            loss = self.criterion(S, self.T).mean()
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+        return 
 
     def display(self, trajectory, close=True):
         fig = plt.figure()
