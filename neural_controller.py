@@ -1,14 +1,10 @@
-import os
 import torch
-import matplotlib.pyplot as plt
-import pytorch_lightning as pl
-import torch.nn as nn
 
 from controls import BoundedControl
 from criteria import criteria
 
 
-class NeuralController(pl.LightningModule):
+class NeuralController:
     def __init__(self, A, d, T, net, gamma, sigma, optimality=None):
         super().__init__()
      

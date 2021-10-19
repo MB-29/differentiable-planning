@@ -5,11 +5,10 @@ os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
 import numpy as np
 import torch
-import pytorch_lightning as pl
 
 from criteria import criteria
 
-class DiscreteController(pl.LightningModule):
+class DiscreteController:
     def __init__(self, A, d, T, gamma, sigma, optimality=''):
         super().__init__()
         self.T = T
