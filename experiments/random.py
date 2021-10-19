@@ -3,36 +3,35 @@ import matplotlib.pyplot as plt
 import logging 
 
 from experiment import Experiment
-from agents import *
+from agents import Active, Oracle, Random
 
+# parameters
 
-
-logging.getLogger("pytorch_lightning").setLevel(0)
-
-T0 = 100
-n_samples = 25
-n_epochs = 5
+T0 = 10
+n_samples = 10
+n_epochs = 2
 gamma = 1
 sigma = 0.1
-n_gradient = 250
+n_gradient = 200
 
-agent_map = {
-    '-random': Random,
-    # 'D-adjoint oracle': Oracle,
-    # 'D-neural oracle': Oracle,
-    # 'D-neural active': Active,
-    #'D-AD active': Active,
-    'E-AD active': Active,
+agents = {
+    'random': Random,
 
-    # 'T-AD oracle': Oracle,
-    #'D-AD oracle': Oracle,
-    #'A-AD oracle': Oracle,
-    'E-AD oracle': Oracle,
+    # 'A active': Active,
+    'D active': Active,
+    # 'E active': Active,
+    # 'T active': Active,
+
+    #'A oracle': Oracle,
+    #'D oracle': Oracle,
+    'E oracle': Oracle,
+    # 'T oracle': Oracle,
 }
+
 A = None 
 d = 4
 experiment = Experiment(A, d, T0, sigma, gamma)
-estimations = experiment.run(agent_map, n_gradient, n_epochs, n_samples)
+estimations = experiment.run(agents, n_gradient, n_epochs, n_samples)
 
 
 for agent_name, agent_estimations in estimations.items():
@@ -42,4 +41,6 @@ for agent_name, agent_estimations in estimations.items():
     std = np.sqrt(np.var(error_values, axis=0) / n_samples)
     plt.errorbar(np.arange(n_epochs+1), mean, yerr=3 *std, label=agent_name, alpha=0.7)
 
+plt.yscale('log')
+plt.legend()
 plt.show()

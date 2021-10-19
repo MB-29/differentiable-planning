@@ -1,4 +1,4 @@
-# Differentiable active learning for system identification
+# Differentiable planning for system identification
 
 ## Usage
 

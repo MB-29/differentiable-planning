@@ -1,18 +1,15 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import torch
-import logging 
 
 from experiment import Experiment
-from agents import *
+from agents import Active, Oracle, Random
 
+# parameters
 
-
-logging.getLogger("pytorch_lightning").setLevel(0)
-
-T0 = 10
-n_samples = 2
-n_epochs = 3
+T0 = 2
+n_samples = 10
+n_epochs = 2
 gamma = 1
 sigma = 0.1
 n_gradient = 200
@@ -26,26 +23,35 @@ A = torch.tensor([
 ])
 d = A.shape[0]
 
-# Choose agents by commenting in/out
-agent_map = {
-    'random': Random,
-    # 'D-adjoint oracle': Oracle,
-    # 'D-neural oracle': Oracle,
-    # 'E-neural oracle': Oracle,
-    # 'E-neural active': Active,
-    #'D-AD active': Active,
-    # 'E active': Active,
-    'D active': Active,
+# run experiments with different agents
+# choose agents by commenting in/out
 
-    # 'T oracle': Oracle,
-    #'D oracle': Oracle,
+agents = {
+    'random': Random,
+    # 'A active': Active,
+    'D active': Active,
+    # 'E active': Active,
+    # 'T active': Active,
+
     #'A oracle': Oracle,
+    #'D oracle': Oracle,
     'E oracle': Oracle,
+    # 'T oracle': Oracle,
 }
 
-experiment = Experiment(A, d, T0, sigma, gamma)
-estimations = experiment.run(agent_map, n_gradient, n_epochs, n_samples)
+# comment out the neural net for a neural control (continuous time setting)
 
+net = None
+# net = control = nn.Sequential(
+#     nn.Linear(d+1, 16),
+#     nn.Tanh(),
+#     nn.Linear(16, d)
+# )
+
+experiment = Experiment(A, d, T0, sigma, gamma, net=net)
+estimations = experiment.run(agents, n_gradient, n_epochs, n_samples)
+
+# plot results
 
 for agent_name, agent_estimations in estimations.items():
     residual = A.numpy() - agent_estimations
@@ -53,5 +59,6 @@ for agent_name, agent_estimations in estimations.items():
     mean = np.mean(error_values, axis=0)
     std = np.sqrt(np.var(error_values, axis=0) / n_samples)
     plt.errorbar(np.arange(n_epochs+1), mean, yerr=3 *std, label=agent_name, alpha=0.7)
+plt.yscale('log')
 plt.legend()
 plt.show()

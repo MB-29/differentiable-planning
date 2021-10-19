@@ -26,7 +26,6 @@ class Experiment:
             agent_estimations = np.zeros((n_samples, n_epochs+1, self.d, self.d))
             optimality = agent_name.split(' ')[0]
             for sample_index in tqdm(range(n_samples)):
-                method = agent_name.split(' ')[0]
                 A = self.get_A()
                 agent = agent_contructor(
                     A,
