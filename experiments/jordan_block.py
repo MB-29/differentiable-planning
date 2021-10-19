@@ -7,9 +7,9 @@ from agents import Active, Oracle, Random
 
 # parameters
 
-T0 = 2
+T0 = 100
 n_samples = 10
-n_epochs = 2
+n_epochs = 5
 gamma = 1
 sigma = 0.1
 n_gradient = 200
