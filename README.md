@@ -7,7 +7,6 @@
 * Python 3
 * torch
 * numpy
-* pytorch-lightning
 
 Install the required packages with `pip install -r requirements.txt`.
 
