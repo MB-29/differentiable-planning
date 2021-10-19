@@ -1,6 +1,4 @@
-import pytorch_lightning as pl
 import torch
-import os
 from scipy.linalg import lstsq
 
 from neural_controller import NeuralController
