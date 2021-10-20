@@ -5,9 +5,8 @@
 
 ### Requirements
 * Python 3
-* torch
+* torch>=1.9.0
 * numpy
-
 Install the required packages with `pip install -r requirements.txt`.
 
 
