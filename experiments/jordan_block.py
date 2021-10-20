@@ -5,7 +5,6 @@ import time
 
 from agents import Active, Oracle, Random
 from experiment import Experiment
-from parallel import run_parallel
 
 if __name__ == '__main__':
     # parameters
