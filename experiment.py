@@ -1,7 +1,7 @@
 import numpy as np
 from tqdm import tqdm
 import torch
-import multiprocessing as mp
+import torch.multiprocessing as mp
 
 from agents import *
 
