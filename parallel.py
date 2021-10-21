@@ -15,11 +15,11 @@ from experiment import Experiment
 # parameters
 
 T0 = 10
-n_samples = 10
+n_samples = 100
 n_epochs = 3
 gamma = 1
 sigma = 0.1
-n_gradient = 2
+n_gradient = 20
 
 A = torch.tensor([
 
@@ -89,7 +89,9 @@ n_processes = mp.cpu_count()
 
 
 if __name__ == '__main__':
+    t1 = time.time()
     print(f'Running on {n_processes} processes')
+
 
     for agent_name, agent_ in agents.items():
         print(f'agent {agent_name}')
@@ -106,6 +108,8 @@ if __name__ == '__main__':
 
         print(f'simulations completed')
 
+    t2 = time.time()
+    print(f'Experiment run in {t2-t1} seconds for {n_samples} samples')
 
     with open('output.pkl', 'wb') as f:
         pickle.dump(agent_residuals, f)

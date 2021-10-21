@@ -14,7 +14,7 @@ if __name__ == '__main__':
     n_epochs = 3
     gamma = 1
     sigma = 0.1
-    n_gradient = 200
+    n_gradient = 20
 
     A = torch.tensor([
 
