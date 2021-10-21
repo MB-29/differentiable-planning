@@ -52,6 +52,7 @@ class Experiment:
         residuals = {}
 
         n_processes = 4
+        n_processes = mp.cpu_count()
         print(f'Running on {n_processes} processes')
 
         agent_residuals = np.zeros((n_samples, n_epochs+1, self.d, self.d))
