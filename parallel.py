@@ -14,9 +14,9 @@ from experiment import Experiment
 
 # parameters
 
-T0 = 10
+T0 = 100
 n_samples = 100
-n_epochs = 3
+n_epochs = 5
 gamma = 1
 sigma = 0.1
 n_gradient = 20
@@ -50,7 +50,7 @@ def identify_(agent_, optimality):
 # choose agents by commenting in/out
 
 agents = {
-    # 'random': Random,
+    'random': Random,
     # 'A active': Active,
     'D active': Active,
     # 'E active': Active,
@@ -71,14 +71,6 @@ net = None
 #     nn.Linear(16, d)
 # )
 
-# experiment = Experiment(A, d, T0, sigma, gamma, net=net)
-# t1 = time.time()
-# # residuals = experiment.run(agents, n_gradient, n_epochs, n_samples)
-# t2 = time.time()
-# residuals = experiment.run_parallel(agents, n_gradient, n_epochs, n_samples)
-# t3 = time.time()
-# print(f'{t2-t1} {t3-t2}')
-# # plot results
 
 
 
@@ -86,10 +78,8 @@ net = None
 residuals = {}
 n_processes = mp.cpu_count()
 
-
-
 if __name__ == '__main__':
-    t1 = time.time()
+    t_start = time.time()
     print(f'Running on {n_processes} processes')
 
 
@@ -108,17 +98,12 @@ if __name__ == '__main__':
 
         print(f'simulations completed')
 
-    t2 = time.time()
-    print(f'Experiment run in {t2-t1} seconds for {n_samples} samples')
+    t_end = time.time()
+    print(f'Experiment run in {t_end-t_start} seconds for {n_samples} samples')
 
-    with open('output.pkl', 'wb') as f:
+
+    output_name = f'{n_samples}-samples_{n_gradient}-gradient_{n_epochs}-epochs'
+    
+    with open(f'{output_name}.pkl', 'wb') as f:
         pickle.dump(agent_residuals, f)
 
-    for agent_name, agent_residuals in residuals.items():
-        error_values = np.linalg.norm(agent_residuals, axis=(2, 3))
-        mean = np.mean(error_values, axis=0)
-        std = np.sqrt(np.var(error_values, axis=0) / n_samples)
-        plt.errorbar(np.arange(n_epochs+1), mean, yerr=3 *std, label=agent_name, alpha=0.7)
-    plt.yscale('log')
-    plt.legend()
-    plt.show()
