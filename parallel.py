@@ -15,7 +15,7 @@ from experiment import Experiment
 # parameters
 
 T0 = 10
-n_samples = 5
+n_samples = 100
 n_epochs = 3
 gamma = 1
 sigma = 0.1
@@ -101,6 +101,8 @@ if __name__ == '__main__':
         for sample_index, result in enumerate(sample_results):
             agent_residuals[sample_index] = result.get()
         residuals[agent_name] = agent_residuals
+
+        print(f'simulations completed')
 
 
     with open('output.pkl', 'wb') as f:
