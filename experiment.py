@@ -61,9 +61,10 @@ class Experiment:
             optimality = agent_name.split(' ')[0]
             args = (self, agent_, n_gradient, n_epochs, optimality, )
 
-            ctx = mp.get_context('spawn')
-            with ctx.Pool(n_processes) as pool:
-                sample_results = [pool.apply_async(identify_parallel, args=args) for _ in range(n_samples)]
+            # ctx = mp.get_context('spawn')
+            # with ctx.Pool(n_processes) as pool:
+            pool = mp.Pool(n_processes)
+            sample_results = [pool.apply_async(identify_parallel, args=args) for _ in range(n_samples)]
             for sample_index, result in enumerate(sample_results):
                 agent_residuals[sample_index] = result.get()
             residuals[agent_name] = agent_residuals
