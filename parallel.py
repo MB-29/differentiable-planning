@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import torch
 import time
 import pickle
-import torch.multiprocessing as mp
+import multiprocessing as mp
 
 from agents import Active, Oracle, Random
 from experiment import Experiment
@@ -15,11 +15,11 @@ from experiment import Experiment
 # parameters
 
 T0 = 10
-n_samples = 100
+n_samples = 10
 n_epochs = 3
 gamma = 1
 sigma = 0.1
-n_gradient = 200
+n_gradient = 2
 
 A = torch.tensor([
 
@@ -97,6 +97,8 @@ if __name__ == '__main__':
         optimality = agent_name.split(' ')[0]
         agent_residuals = np.zeros((n_samples, n_epochs+1, d, d))
 
+        # ctx = mp.get_context('spawn')
+        # with ctx.Pool(n_processes) as pool:
         sample_results = [pool.apply_async(identify_, args=(agent_, optimality, )) for _ in range(n_samples)]
         for sample_index, result in enumerate(sample_results):
             agent_residuals[sample_index] = result.get()
