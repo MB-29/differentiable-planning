@@ -11,7 +11,7 @@ if __name__ == '__main__':
     # parameters
 
     T0 = 10
-    n_samples = 100
+    n_samples = 10
     n_epochs = 3
     gamma = 1
     sigma = 0.1
@@ -52,12 +52,12 @@ if __name__ == '__main__':
     # )
 
     experiment = Experiment(A, d, T0, sigma, gamma, net=net)
-    #t1 = time.time()
-    #residuals = experiment.run(agents, n_gradient, n_epochs, n_samples)
-    #t2 = time.time()
+    t1 = time.time()
+    residuals = experiment.run(agents, n_gradient, n_epochs, n_samples)
+    t2 = time.time()
     residuals = experiment.run_parallel(agents, n_gradient, n_epochs, n_samples)
-    #t3 = time.time()
-    #print(f'{t2-t1} {t3-t2}')
+    t3 = time.time()
+    print(f'{t2-t1} {t3-t2}')
     # plot results
 
     with open('output.pkl', 'wb') as f:
