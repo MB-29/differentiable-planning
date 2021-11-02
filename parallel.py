@@ -14,7 +14,7 @@ from experiment import Experiment
 
 # parameters
 
-T0 = 100
+T0 = 10
 n_samples = 100
 n_epochs = 5
 gamma = 1
@@ -26,7 +26,7 @@ A = torch.tensor([
     [0.9, 1, 0, 0],
     [0, 0.9, 1, 0],
     [0, 0, 0.9, 1],
-    [0, 0, 0, 0.9],
+    [0, 0, 0, 0.9], 
 ])
 d = A.shape[0]
 
@@ -75,11 +75,12 @@ net = None
 
 
 
-residuals = {}
-n_processes = mp.cpu_count()
 
 if __name__ == '__main__':
     t_start = time.time()
+    
+    residuals = {}
+    n_processes = mp.cpu_count()
     print(f'Running on {n_processes} processes')
 
 

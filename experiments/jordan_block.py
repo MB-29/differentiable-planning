@@ -11,7 +11,7 @@ if __name__ == '__main__':
 
     T0 = 10
     n_samples = 100
-    n_epochs = 3
+    n_epochs = 5
     gamma = 1
     sigma = 0.1
     n_gradient = 20
