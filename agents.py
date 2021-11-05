@@ -6,10 +6,6 @@ from discrete_controller import DiscreteController
 
 
 
-def estimate(X, U):
-    Y = X[:, 1:, :] - U
-    A_hat = torch.linalg.lstsq(X[:, :-1, :], Y).solution.permute(0, 2, 1)
-    return A_hat
 
 class Agent:
     def __init__(self, A, T, d, gamma, sigma, optimality=None, n_gradient=100, net=None):
@@ -24,7 +20,6 @@ class Agent:
         self.d = d
         self.batch_size = 16
         self.n_gradient = n_gradient
-        self.dataset = torch.zeros((self.batch_size*n_gradient, d))
 
         self.x_data = torch.zeros(1, self.d)
         self.y_data = torch.zeros(1, self.d)
@@ -89,7 +84,6 @@ class Agent:
         X, U = self.play_random()
         self.update(X.squeeze(), U.squeeze())
     
-
 
 class Random(Agent):
 

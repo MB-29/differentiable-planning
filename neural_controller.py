@@ -1,7 +1,7 @@
 import torch
 
 from controls import BoundedControl
-from criteria import criteria
+from utils import criteria
 
 
 class NeuralController:
@@ -52,7 +52,7 @@ class NeuralController:
             x = torch.zeros(batch_size, self.d)
             X, U = self.forward(x)
             S = torch.linalg.svdvals(X)
-            loss = self.criterion(S, self.T).mean()
+            loss = self.criterion(S, self.T)
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
