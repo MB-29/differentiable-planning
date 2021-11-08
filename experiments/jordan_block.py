@@ -9,12 +9,12 @@ from experiment import Experiment
 if __name__ == '__main__':
     # parameters
 
-    T0 = 10
-    n_samples = 100
-    n_epochs = 5
+    T0 = 100
+    n_samples = 10
+    n_epochs = 3
     gamma = 1
     sigma = 0.1
-    n_gradient = 20
+    n_gradient = 5
 
     A = torch.tensor([
 
@@ -24,6 +24,7 @@ if __name__ == '__main__':
         [0, 0, 0, 0.9],
     ])
     d = A.shape[0]
+    B = torch.eye(d)
 
     # run experiments with different agents
     # choose agents by commenting in/out
@@ -50,7 +51,7 @@ if __name__ == '__main__':
     #     nn.Linear(16, d)
     # )
 
-    experiment = Experiment(A, d, T0, sigma, gamma, net=net)
+    experiment = Experiment(A, B, T0, sigma, gamma, net=net)
     t1 = time.time()
     residuals = experiment.run(agents, n_gradient, n_epochs, n_samples)
     t2 = time.time()

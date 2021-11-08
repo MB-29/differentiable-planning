@@ -10,16 +10,18 @@ from utils import criteria, estimate, estimate_batch
 
 
 class DiscreteController:
-    def __init__(self, A, d, T, gamma, sigma, optimality=''):
+    def __init__(self, A, B, T, gamma, sigma, optimality=''):
         super().__init__()
         self.T = T
         self.A = A
-        self.d = d
+        self.B = B
+        self.d, self.m = B.shape
+        
 
         self.gamma = gamma
         self.sigma = sigma
 
-        self.U = torch.randn(self.T, self.d, requires_grad=True)
+        self.U = torch.randn(self.T, self.m, requires_grad=True)
 
         self.criterion = criteria.get(optimality)
 
@@ -33,7 +35,7 @@ class DiscreteController:
         X = torch.zeros(batch_size, self.T+1, self.d)
         for t in range(self.T):
             u =  U[t, :] 
-            x = (A @ x.T).T + u 
+            x = (A @ x.T).T + self.B@u 
             if stochastic:
                 x += self.sigma * torch.randn_like(x)
             X[:, t+1, :] = x
@@ -44,7 +46,7 @@ class DiscreteController:
         return self.integration(x, A, U, self.sigma), U
 
     def play_random(self, x, A, gamma):
-        U = self.gamma * torch.randn(self.T, self.d) / np.sqrt(self.d)
+        U = self.gamma * torch.randn(self.T, self.m) / np.sqrt(self.m)
         
         return self.integration(x, A, U, self.sigma), U
     

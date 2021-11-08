@@ -8,16 +8,17 @@ from discrete_controller import DiscreteController
 
 
 class Agent:
-    def __init__(self, A, T, d, gamma, sigma, optimality=None, n_gradient=100, net=None):
+    def __init__(self, A, B, T, gamma, sigma, optimality=None, n_gradient=100, net=None):
         self.A = A
-        self.controller = DiscreteController(A, d, T, gamma=gamma, sigma=sigma, optimality=optimality)
+        self.B = B
+        self.controller = DiscreteController(A, B, T, gamma=gamma, sigma=sigma, optimality=optimality)
         self.net = net
 
         self.gamma = gamma
         self.sigma = sigma
 
         self.T = T
-        self.d = d
+        self.d = A.shape[0]
         self.batch_size = 16
         self.n_gradient = n_gradient
 
@@ -31,7 +32,7 @@ class Agent:
     def plan(self, A_hat, T):
         args = {
             'A': A_hat,
-            'd': self.d,
+            'B': self.B,
             'T': T,
             'gamma': self.gamma,
             'sigma': self.sigma,
@@ -63,7 +64,7 @@ class Agent:
         return X, U
 
     def update(self, X, U):
-        Y = X[1:, :] - U
+        Y = X[1:, :] - U@(self.B.T)
         self.x_data = torch.cat((self.x_data, X[:-1, :]), dim=0)
         self.y_data = torch.cat((self.y_data, Y), dim=0)
         solution, _, _, _ = lstsq(self.x_data, self.y_data)

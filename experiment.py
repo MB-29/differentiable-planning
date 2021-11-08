@@ -12,10 +12,11 @@ def identify_parallel(experiment, agent_, n_gradient, n_epochs, optimality):
 
 class Experiment:
 
-    def __init__(self, A, d, T0, sigma, gamma, net=None):
+    def __init__(self, A, B, T0, sigma, gamma, net=None):
 
         self.A = A
-        self.d = d
+        self.B = B
+        self.d = A.shape[0]
         self.sigma = sigma
         self.gamma = gamma
         self.T0 = T0
@@ -33,8 +34,8 @@ class Experiment:
                 A = self.get_A()
                 agent = agent_(
                     A,
+                    self.B,
                     self.T0,
-                    self.d,
                     gamma=self.gamma,
                     sigma=self.sigma,
                     n_gradient=n_gradient,
