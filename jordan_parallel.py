@@ -40,7 +40,7 @@ def identify_(agent_, optimality):
     return residual
 
 if __name__ == '__main__':
-    agent_index, criterion_index = int(str(sys.argv[1])[0]), int(str(sys.argv[1])[0])
+    agent_index, criterion_index = int(str(sys.argv[1])[0]), int(str(sys.argv[1])[1])
     agent_ = [Active, Oracle][agent_index-1]
     optimality = ['A', 'D', 'E', 'L', 'T'][criterion_index-1]
     print(f'agent type {agent_index-1}, optimality {optimality}')
