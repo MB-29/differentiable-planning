@@ -26,7 +26,10 @@ B = torch.eye(d)
 
 
 if __name__ == '__main__':
-    agent_index, criterion_index = int(str(sys.argv[1])[0]), int(str(sys.argv[1])[1])
+    arg = sys.argv[1]
+    agent_index = int(str(arg)[0])
+    criterion_index = int(str(arg)[1])
+    job_index = int(str(arg)[2])
     agent_ = [Active, Oracle][agent_index-1]
     optimality = ['A', 'D', 'E', 'L', 'T'][criterion_index-1]
     print(f'agent type {agent_index-1}, optimality {optimality}')
@@ -53,7 +56,7 @@ if __name__ == '__main__':
     
 
 
-    output_name = f'agent_{agent_index}_{optimality}_{n_samples}-samples_{n_gradient}-gradients_{n_epochs}-epochs'
+    output_name = f'agent_{agent_index}_{optimality}_{n_samples}-samples_{n_gradient}-gradients_{n_epochs}-epochs_{job_index}'
     
     with open(f'{output_name}.pkl', 'wb') as f:
         pickle.dump(residuals, f)
