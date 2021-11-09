@@ -7,6 +7,7 @@ import numpy as np
 import torch
 
 from utils import criteria, estimate, estimate_batch
+from adjoint import Evaluation
 
 
 class DiscreteController:
@@ -43,6 +44,7 @@ class DiscreteController:
 
     def play_control(self, x, A):
         U = self.gamma * np.sqrt(self.T) * self.U / torch.norm(self.U)
+        # print(f'played energy {(U**2).sum()}')
         return self.integration(x, A, U, self.sigma), U
 
     def play_random(self, x, A, gamma):
@@ -50,7 +52,7 @@ class DiscreteController:
         
         return self.integration(x, A, U, self.sigma), U
     
-    def plan(self, n_steps, batch_size, stochastic=True, learning_rate=0.1, test=False):
+    def plan(self, n_steps, batch_size, stochastic, learning_rate=0.1, test=False):
         optimizer = torch.optim.Adam([self.U], lr=learning_rate)
         loss_values = []
         error_values = []
@@ -63,6 +65,9 @@ class DiscreteController:
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
+            self.U.data = self.gamma *np.sqrt(self.T) * self.U / torch.norm(self.U)
+
+            
 
             if test:
                 test_loss, error = self.test(batch_size)
@@ -71,13 +76,42 @@ class DiscreteController:
                 error_values.append(error.item())
             
         return loss_values, error_values
+
+    def plan_adjoint(self, n_steps, batch_size, stochastic, learning_rate=0.1, test=False):
+        optimizer = torch.optim.Adam([self.U], lr=learning_rate)
+        loss_values = []
+        error_values = []
+        for step_index in range(n_steps):
+            # U = self.gamma * np.sqrt(self.T) * self.U / torch.norm(self.U)
+            loss = Evaluation.apply(self.A, self.B, self.U, self.T, self.sigma)
+            print(f'training loss {loss.item()}')
+
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+            # self.U.data = self.gamma * np.sqrt(self.T) * self.U / torch.norm(self.U)
+
+            if test:
+                test_loss, error = self.test(batch_size)
+                # print(f'test loss {test_loss.item()}')
+            
+                loss_values.append(test_loss.item())
+                error_values.append(error.item())
+            
+        return loss_values, error_values
+    
+
+        
     
     def test(self, batch_size):
         with torch.no_grad():
             x = torch.zeros(batch_size, self.d)
             X, U = self.play_control(x, self.A)
+            # X, U = self.forward(x, False)
             S = torch.linalg.svdvals(X[:, :-1, :])
             test_loss = self.criterion(S, self.T)
+            # M = X.permute(0, 2, 1) @ X.permute(0, 1, 2)
+            # test_loss = - torch.log(torch.det(M)).mean()
 
             A_hat = estimate_batch(X, U.unsqueeze(0))
             error = torch.linalg.norm(A_hat - self.A, dim=(1,2)).mean()
