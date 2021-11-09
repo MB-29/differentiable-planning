@@ -75,7 +75,8 @@ class Agent:
 
     def identify(self, n_steps):
         self.initialize()
-        for step_index in range(n_steps):
+        for epoch_index in range(n_steps):
+            print(f'epoch {epoch_index}')
             self.T *= 2
             self.timestep()
         return self.estimations

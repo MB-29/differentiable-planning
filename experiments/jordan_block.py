@@ -10,11 +10,11 @@ if __name__ == '__main__':
     # parameters
 
     T0 = 100
-    n_samples = 10
-    n_epochs = 3
+    n_samples = 2
+    n_epochs = 8
     gamma = 1
     sigma = 0.1
-    n_gradient = 5
+    n_gradient = 200
 
     A = torch.tensor([
 

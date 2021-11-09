@@ -47,10 +47,11 @@ if __name__ == '__main__':
 # parameters
 
     t_start = time.time()
+
+    
     
     residuals = {}
     n_processes = mp.cpu_count()
-    print(f'Running on {n_processes} processes')
 
 
     
