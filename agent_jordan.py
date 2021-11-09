@@ -7,12 +7,12 @@ from tqdm import tqdm
 
 from agents import Active, Oracle, Random
 
-T0 = 10
-n_samples = 5
-n_epochs = 3
+T0 = 100
+n_samples = 10
+n_epochs = 5
 gamma = 1
 sigma = 0.1
-n_gradient = 2
+n_gradient = 200
 
 A = torch.tensor([
 
