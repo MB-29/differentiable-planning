@@ -52,7 +52,7 @@ class DiscreteController:
         
         return self.integration(x, A, U, self.sigma), U
     
-    def plan(self, n_steps, batch_size, stochastic, learning_rate=0.1, test=False):
+    def plan(self, n_steps, batch_size, stochastic=True, learning_rate=0.1, test=False):
         optimizer = torch.optim.Adam([self.U], lr=learning_rate)
         loss_values = []
         error_values = []
