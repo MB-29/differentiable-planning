@@ -8,11 +8,11 @@ from tqdm import tqdm
 from agents import Active, Oracle, Random
 
 T0 = 100
-n_samples = 10
-n_epochs = 5
+n_samples = 1
+n_epochs = 8
 gamma = 1
 sigma = 0.1
-n_gradient = 200
+n_gradient = 100
 
 A = torch.tensor([
 
@@ -35,7 +35,6 @@ if __name__ == '__main__':
     print(f'agent type {agent_index-1}, optimality {optimality}')
 
     residuals = np.zeros((n_samples, n_epochs+1, d, d))
-# parameters
     for sample_index in tqdm(range(n_samples)):
         agent = agent_(
             A,

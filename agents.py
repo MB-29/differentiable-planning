@@ -45,8 +45,8 @@ class Agent:
         else:
             self.controller = controller(**args)
 
-        
-        self.controller.plan(self.n_gradient, self.batch_size)
+        n_gradient = self.epoch_index * self.n_gradient
+        self.controller.plan(n_gradient, self.batch_size)
 
     
     
@@ -75,10 +75,12 @@ class Agent:
 
     def identify(self, n_steps):
         self.initialize()
+        self.epoch_index = 1
         for epoch_index in range(n_steps):
             print(f'epoch {epoch_index}')
             self.T *= 2
             self.timestep()
+            self.epoch_index += 1
         return self.estimations
 
 
