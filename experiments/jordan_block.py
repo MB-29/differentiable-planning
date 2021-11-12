@@ -10,8 +10,8 @@ if __name__ == '__main__':
     # parameters
 
     T0 = 100
-    n_samples = 2
-    n_epochs = 8
+    n_samples = 10
+    n_epochs = 1
     gamma = 1
     sigma = 0.1
     n_gradient = 200
@@ -65,6 +65,6 @@ if __name__ == '__main__':
         mean = np.mean(error_values, axis=0)
         std = np.sqrt(np.var(error_values, axis=0) / n_samples)
         plt.errorbar(np.arange(n_epochs+1), mean, yerr=3 *std, label=agent_name, alpha=0.7)
-    # plt.yscale('log')
+    plt.yscale('log')
     plt.legend()
     plt.show()
