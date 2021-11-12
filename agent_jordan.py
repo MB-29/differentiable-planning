@@ -57,7 +57,7 @@ if __name__ == '__main__':
     
 
 
-    output_name = f'agent_{agent_index}_{optimality}_{n_samples}-samples_{n_gradient}-gradients_{n_epochs}-epochs_{arg}'
+    output_name = f'{optimality}_{n_samples}-samples_{n_gradient}-gradients_{n_epochs}-epochs_{arg}'
     
     with open(f'{output_name}.pkl', 'wb') as f:
         pickle.dump(residuals, f)
