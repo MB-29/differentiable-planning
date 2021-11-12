@@ -105,6 +105,20 @@ class DiscreteController:
     
     def test(self, batch_size):
         with torch.no_grad():
+            x = torch.zeros(1, self.d)
+            X, U = self.play_control(x, self.A)
+            # X, U = self.forward(x, False)
+            S = torch.linalg.svdvals(X[:, :-1])
+            test_loss = self.criterion(S, self.T)
+            # M = X.permute(0, 2, 1) @ X.permute(0, 1, 2)
+            # test_loss = - torch.log(torch.det(M)).mean()
+
+            A_hat = estimate(X.squeeze(), U)
+            error = torch.linalg.norm(A_hat - self.A)
+
+            return test_loss, error
+    def test_batch(self, batch_size):
+        with torch.no_grad():
             x = torch.zeros(batch_size, self.d)
             X, U = self.play_control(x, self.A)
             # X, U = self.forward(x, False)
