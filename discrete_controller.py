@@ -11,18 +11,20 @@ from adjoint import Evaluation
 
 
 class DiscreteController:
-    def __init__(self, A, B, T, gamma, sigma, optimality=''):
+    def __init__(self, A, B, T, X_data, gamma, sigma, optimality=''):
         super().__init__()
         self.T = T
         self.A = A
         self.B = B
         self.d, self.m = B.shape
+        self.X_data = X_data
         
 
         self.gamma = gamma
         self.sigma = sigma
 
         self.U = torch.randn(self.T, self.m, requires_grad=True)
+        # self.U = torch.ones(self.T, self.m, requires_grad=True)
 
         self.criterion = criteria.get(optimality)
 
@@ -40,6 +42,7 @@ class DiscreteController:
             if stochastic:
                 x += self.sigma * torch.randn_like(x)
             X[:, t+1, :] = x
+        print(f'played energy {(U**2).sum()}')
         return X
 
     def play_control(self, x, A):
@@ -59,7 +62,10 @@ class DiscreteController:
         for step_index in range(n_steps):
             x = torch.zeros(batch_size, self.d)
             X, U = self.forward(x, stochastic)
-            S = torch.linalg.svdvals(X[:, :-1, :])
+            X_data = self.X_data.unsqueeze(0).expand(batch_size, -1, -1)
+            # print(f'{X_data.shape}, {X.shape}')
+            X_total = torch.cat((X_data, X), dim=1)
+            S = torch.linalg.svdvals(X_total[:, :-1, :])
             loss = self.criterion(S, self.T)
 
             optimizer.zero_grad()
@@ -67,10 +73,8 @@ class DiscreteController:
             optimizer.step()
             self.U.data = self.gamma *np.sqrt(self.T) * self.U / torch.norm(self.U)
 
-            
-
             if test:
-                test_loss, error = self.test(batch_size)
+                test_loss, error = self.test_batch(batch_size)
             
                 loss_values.append(test_loss.item())
                 error_values.append(error.item())
@@ -84,7 +88,7 @@ class DiscreteController:
         for step_index in range(n_steps):
             # U = self.gamma * np.sqrt(self.T) * self.U / torch.norm(self.U)
             loss = Evaluation.apply(self.A, self.B, self.U, self.T, self.sigma)
-            print(f'training loss {loss.item()}')
+            # print(f'training loss {loss.item()}')
 
             optimizer.zero_grad()
             loss.backward()
@@ -92,7 +96,7 @@ class DiscreteController:
             # self.U.data = self.gamma * np.sqrt(self.T) * self.U / torch.norm(self.U)
 
             if test:
-                test_loss, error = self.test(batch_size)
+                test_loss, error = self.test_batch(batch_size)
                 # print(f'test loss {test_loss.item()}')
             
                 loss_values.append(test_loss.item())
@@ -101,8 +105,6 @@ class DiscreteController:
         return loss_values, error_values
     
 
-        
-    
     def test(self, batch_size):
         with torch.no_grad():
             x = torch.zeros(1, self.d)
@@ -120,8 +122,8 @@ class DiscreteController:
     def test_batch(self, batch_size):
         with torch.no_grad():
             x = torch.zeros(batch_size, self.d)
-            X, U = self.play_control(x, self.A)
-            # X, U = self.forward(x, False)
+            # X, U = self.play_control(x, self.A)
+            X, U = self.forward(x, False)
             S = torch.linalg.svdvals(X[:, :-1, :])
             test_loss = self.criterion(S, self.T)
             # M = X.permute(0, 2, 1) @ X.permute(0, 1, 2)
