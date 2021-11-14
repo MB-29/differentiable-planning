@@ -11,7 +11,6 @@ class Agent:
     def __init__(self, A, B, T, gamma, sigma, optimality=None, n_gradient=100, net=None):
         self.A = A
         self.B = B
-        self.controller = DiscreteController(A, B, T, gamma=gamma, sigma=sigma, optimality=optimality)
         self.net = net
 
         self.gamma = gamma
@@ -25,6 +24,8 @@ class Agent:
         self.x_data = torch.zeros(1, self.d)
         self.y_data = torch.zeros(1, self.d)
 
+        self.controller = DiscreteController(A, B, T, self.x_data, gamma=gamma, sigma=sigma, optimality=optimality)
+
         self.estimations = []
         self.optimality = optimality
 
@@ -33,6 +34,7 @@ class Agent:
         args = {
             'A': A_hat,
             'B': self.B,
+            'X_data': self.x_data,
             'T': T,
             'gamma': self.gamma,
             'sigma': self.sigma,
