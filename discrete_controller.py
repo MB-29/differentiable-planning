@@ -42,7 +42,7 @@ class DiscreteController:
             if stochastic:
                 x += self.sigma * torch.randn_like(x)
             X[:, t+1, :] = x
-        print(f'played energy {(U**2).sum()}')
+        # print(f'played energy {(U**2).sum()}')
         return X
 
     def play_control(self, x, A):

@@ -27,6 +27,7 @@ B = torch.eye(d)
 
 if __name__ == '__main__':
     arg = sys.argv[1]
+    print(f'{n_samples} samples, arg {arg}')
     # agent_index = int(str(arg)[0])
     # criterion_index = int(str(arg)[1])
     # job_index = int(str(arg)[2])
@@ -38,6 +39,7 @@ if __name__ == '__main__':
 
     residuals = np.zeros((n_samples, n_epochs+1, d, d))
     for sample_index in tqdm(range(n_samples)):
+        print(f'sample {sample_index}')
         agent = agent_(
             A,
             B,
@@ -57,7 +59,7 @@ if __name__ == '__main__':
     
 
 
-    output_name = f'{optimality}_{n_samples}-samples_{n_gradient}-gradients_{n_epochs}-epochs_{arg}'
+    output_name = f'{optimality}-optimality_{n_samples}-samples_{n_gradient}-gradients_{n_epochs}-epochs_{arg}'
     
     with open(f'{output_name}.pkl', 'wb') as f:
         pickle.dump(residuals, f)
