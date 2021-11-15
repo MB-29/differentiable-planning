@@ -8,11 +8,12 @@ from tqdm import tqdm
 from agents import Active, Oracle, Random
 
 T0 = 100
-n_samples = 1
-n_epochs = 8
+n_samples = 2
+n_epochs = 7
 gamma = 100
 sigma = 1
 n_gradient = 100
+batch_size = 100
 
 A = torch.tensor([
 
@@ -46,6 +47,7 @@ if __name__ == '__main__':
             T0,
             gamma=gamma,
             sigma=sigma,
+            batch_size=batch_size,
             n_gradient=n_gradient,
             optimality=optimality
         )

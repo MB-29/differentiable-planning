@@ -8,7 +8,7 @@ from discrete_controller import DiscreteController
 
 
 class Agent:
-    def __init__(self, A, B, T, gamma, sigma, optimality=None, n_gradient=100, net=None):
+    def __init__(self, A, B, T, gamma, sigma, batch_size, optimality=None, n_gradient=100, net=None):
         self.A = A
         self.B = B
         self.net = net
@@ -18,13 +18,21 @@ class Agent:
 
         self.T = T
         self.d = A.shape[0]
-        self.batch_size = 16
+        self.batch_size = batch_size
         self.n_gradient = n_gradient
 
         self.x_data = torch.zeros(1, self.d)
         self.y_data = torch.zeros(1, self.d)
 
-        self.controller = DiscreteController(A, B, T, self.x_data, gamma=gamma, sigma=sigma, optimality=optimality)
+        self.controller = DiscreteController(
+            A,
+            B,
+            T,
+            gamma=gamma,
+            sigma=sigma,
+            X_data=self.x_data,
+            optimality=optimality
+            )
 
         self.estimations = []
         self.optimality = optimality
@@ -56,6 +64,8 @@ class Agent:
         with torch.no_grad():
             self.batch = torch.zeros(1, self.d)
             X, U = self.controller.play_control(self.batch, self.A)
+            energy_constraint = (torch.sum(U**2) / self.T <= self.gamma**2*1.1 )
+            assert energy_constraint, f'energy constraint not met : mean energy {torch.sum(U**2) / self.T}'
         return X, U
 
     def play_random(self):

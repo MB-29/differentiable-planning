@@ -22,7 +22,7 @@ class Experiment:
         self.T0 = T0
         self.net = net
 
-    def run(self, agents, n_gradient, n_epochs, n_samples):
+    def run(self, agents, n_gradient, n_epochs, n_samples, batch_size):
 
         residuals = {}
 
@@ -38,6 +38,7 @@ class Experiment:
                     self.T0,
                     gamma=self.gamma,
                     sigma=self.sigma,
+                    batch_size=batch_size,
                     n_gradient=n_gradient,
                     optimality=optimality,
                     net=self.net
