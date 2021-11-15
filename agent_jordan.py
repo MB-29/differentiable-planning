@@ -10,8 +10,8 @@ from agents import Active, Oracle, Random
 T0 = 100
 n_samples = 1
 n_epochs = 8
-gamma = 1
-sigma = 0.1
+gamma = 100
+sigma = 1
 n_gradient = 100
 
 A = torch.tensor([
