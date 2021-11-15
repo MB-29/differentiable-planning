@@ -11,10 +11,11 @@ if __name__ == '__main__':
 
     T0 = 100
     n_samples = 10
-    n_epochs = 1
-    gamma = 1
-    sigma = 0.1
-    n_gradient = 200
+    n_epochs = 2
+    gamma = 100
+    sigma = 1
+    n_gradient = 100
+    batch_size = 100
 
     A = torch.tensor([
 
@@ -53,7 +54,7 @@ if __name__ == '__main__':
 
     experiment = Experiment(A, B, T0, sigma, gamma, net=net)
     t1 = time.time()
-    residuals = experiment.run(agents, n_gradient, n_epochs, n_samples)
+    residuals = experiment.run(agents, n_gradient, n_epochs, n_samples, batch_size)
     t2 = time.time()
     # residuals = experiment.run_parallel(agents, n_gradient, n_epochs, n_samples)
     # t3 = time.time()
