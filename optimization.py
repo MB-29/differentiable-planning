@@ -39,8 +39,8 @@ if __name__ == '__main__':
     print(f'{n_samples} samples, task {task_id}, optimality {optimality}, certainty={certainty}')
 
     output = {}
-    loss = np.zeros((n_gradient, n_samples))
-    error = np.zeros((n_gradient, n_samples))
+    loss_values = np.zeros((n_samples, n_gradient))
+    error_values = np.zeros((n_samples, n_gradient))
     for sample_index in tqdm(range(n_samples)):
         print(f'sample {sample_index}')
 
@@ -49,19 +49,19 @@ if __name__ == '__main__':
         A = generate_random_A(d)
         controller = DiscreteController(
             A, B, T0, gamma, sigma, optimality=optimality)
-        loss_values, error_values = controller.plan(
+        sample_loss, sample_error = controller.plan(
             n_gradient,
             batch_size,
-            learning_rate=learning_rate,
+            learning_rate=learning_rate,    
             certainty=certainty,
             test=True
         )
-        loss[:, sample_index] = loss_values
-        error[:, sample_index] = error_values
+        loss_values[sample_index, :] = sample_loss
+        error_values[sample_index, :] = sample_error
 
     output['loss'] = loss_values
     output['error'] = error_values
-    output['optimalitiy'] = optimality
+    output['optimality'] = optimality
     output['certainty'] = certainty
     
 
