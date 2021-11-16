@@ -29,7 +29,7 @@ if __name__ == '__main__':
     # agent_ = [Active, Oracle][agent_index-1]
     # optimality = ['A', 'D', 'E', 'L', 'T'][criterion_index-1]
     # print(f'agent type {agent_index-1}, optimality {optimality}')
-    optimality = 'L'
+    optimality = 'E'
     agent_ = Oracle
 
     residuals = np.zeros((n_samples, n_epochs+1, d, d))
