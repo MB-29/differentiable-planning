@@ -6,6 +6,7 @@ import sys
 from tqdm import tqdm
 
 from agents import Active, Oracle, Random
+from utils import generate_random_A
 
 T0 = 100
 n_samples = 2
@@ -15,15 +16,8 @@ sigma = 1
 n_gradient = 100
 batch_size = 100
 
-A = torch.tensor([
-
-    [0.9, 1, 0, 0],
-    [0, 0.9, 1, 0],
-    [0, 0, 0.9, 1],
-    [0, 0, 0, 0.9],
-])
-d = A.shape[0]
-B = torch.eye(d)
+d = 5
+m = 3
 
 
 if __name__ == '__main__':
@@ -41,6 +35,9 @@ if __name__ == '__main__':
     residuals = np.zeros((n_samples, n_epochs+1, d, d))
     for sample_index in range(n_samples):
         print(f'sample {sample_index}')
+
+        A = generate_random_A(d)
+        B = torch.randn(d, m)
         agent = agent_(
             A,
             B,
@@ -51,7 +48,6 @@ if __name__ == '__main__':
             n_gradient=n_gradient,
             optimality=optimality
         )
-
         sample_estimations = np.array(agent.identify(n_epochs)).squeeze()
 
         sample_residuals = sample_estimations - A.numpy()
@@ -59,7 +55,7 @@ if __name__ == '__main__':
     
 
 
-    output_name = f'jordan_{optimality}-optimality_{n_samples}-samples_{n_gradient}-gradients_{n_epochs}-epochs_{arg}'
+    output_name = f'random_{optimality}-optimality_{n_samples}-samples_{n_gradient}-gradients_{n_epochs}-epochs_{arg}'
     
     with open(f'{output_name}.pkl', 'wb') as f:
         pickle.dump(residuals, f)
