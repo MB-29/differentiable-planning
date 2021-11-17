@@ -10,9 +10,9 @@ from utils import generate_random_A
 from discrete_controller import DiscreteController
 
 T0 = 100
-n_samples = 200
+n_samples = 500
 gamma = 1
-sigma = 0.5
+sigma = 1
 n_gradient = 200
 batch_size = 100
 d = 4
