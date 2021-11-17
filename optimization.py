@@ -9,11 +9,11 @@ import argparse
 from utils import generate_random_A
 from discrete_controller import DiscreteController
 
-T0 = 100
-n_samples = 200
+T0 = 10
+n_samples = 2
 gamma = 1
 sigma = 0.5
-n_gradient = 200
+n_gradient = 2
 batch_size = 100
 d = 4
 B = torch.eye(d)
@@ -30,7 +30,7 @@ if __name__ == '__main__':
     # optimality = args.optimality
     # task_id = args.task_id
     # certainty = args.certainty        
-    task_id = sys.argv[1]
+    task_id = int(sys.argv[1])
     # arg_1 = int(str(task_id)[0])
     # arg_2 = int(str(task_id)[1])
     # optimality = ['A', 'D', 'E', 'L', 'T'][arg_1-1]
@@ -63,6 +63,8 @@ if __name__ == '__main__':
     output['error'] = error_values
     output['optimality'] = optimality
     output['stochastic'] = stochastic
+    output['gamma'] = gamma
+    output['sigma'] = sigma
     
 
 
