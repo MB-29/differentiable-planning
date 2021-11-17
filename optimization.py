@@ -9,11 +9,11 @@ import argparse
 from utils import generate_random_A
 from discrete_controller import DiscreteController
 
-T0 = 10
-n_samples = 2
+T0 = 100
+n_samples = 200
 gamma = 1
 sigma = 0.5
-n_gradient = 2
+n_gradient = 200
 batch_size = 100
 d = 4
 B = torch.eye(d)
