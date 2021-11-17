@@ -56,15 +56,15 @@ class Agent:
             self.controller = controller(**args)
 
         n_gradient = self.epoch_index * self.n_gradient
-        self.controller.plan(n_gradient, self.batch_size)
+        self.controller.plan(self.n_gradient, self.batch_size)
 
-    
     
     def play(self):
         with torch.no_grad():
             self.batch = torch.zeros(1, self.d)
             X, U = self.controller.play_control(self.batch, self.A)
-            energy_constraint = (torch.sum(U**2) / self.T <= self.gamma**2*1.1 )
+            # print(f'played mean energy {torch.sum(U**2) / self.T}')
+            energy_constraint = (torch.sum(U**2) / self.T <= (self.gamma**2)*1.1 )
             assert energy_constraint, f'energy constraint not met : mean energy {torch.sum(U**2) / self.T}'
         return X, U
 
@@ -72,7 +72,7 @@ class Agent:
         self.batch = torch.zeros(1, self.d)
         self.controller.T = self.T
         X, U = self.controller.play_random(
-            self.batch, self.A, gamma=self.gamma)
+            self.batch, self.A)
         return X, U
 
     def update(self, X, U):

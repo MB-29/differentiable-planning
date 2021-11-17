@@ -29,33 +29,39 @@ class DiscreteController:
         self.criterion = criteria.get(optimality)
 
 
-    def forward(self, x, certainty):
+    def forward(self, x, stochastic=True):
         U = self.gamma * np.sqrt(self.T) * self.U / torch.norm(self.U)
-        return self.integration(x, self.A, U, certainty), U
+        return self.integration(x, self.A, U, stochastic), U
 
-    def integration(self, x, A, U, certainty):
+    def integration(self, x, A, U, stochastic):
         batch_size = x.shape[0]
         X = torch.zeros(batch_size, self.T+1, self.d)
         for t in range(self.T):
             u =  U[t, :] 
             x = (A @ x.T).T + self.B@u 
-            if not certainty:
-                x += self.sigma * torch.randn_like(x)
+            if stochastic:
+                noise = self.sigma * torch.randn_like(x)
+                x += noise
             X[:, t+1, :] = x
         # print(f'played mean energy {(U**2).sum()/self.T}')
         return X
 
+    def play(self, x, A, U):
+        # print(f'played mean energy {(U**2).sum() / self.T}')
+        energy_constraint = (torch.sum(U**2) / self.T <= (self.gamma**2)*1.1)
+        assert energy_constraint, f'energy constraint not met : mean energy {torch.sum(U**2) / self.T}'
+        return self.integration(x, A, U, stochastic=True), U
+
     def play_control(self, x, A):
         U = self.gamma * np.sqrt(self.T) * self.U / torch.norm(self.U)
-        # print(f'played energy {(U**2).sum()}')
-        return self.integration(x, A, U, self.sigma), U
+        return self.play(x, A, U)
 
-    def play_random(self, x, A, gamma):
+    def play_random(self, x, A):
         U = self.gamma * torch.randn(self.T, self.m) / np.sqrt(self.m)
+        return self.play(x, A, U)
         
-        return self.integration(x, A, U, self.sigma), U
     
-    def plan(self, n_steps, batch_size, certainty=False, learning_rate=0.1, test=False):
+    def plan(self, n_steps, batch_size, stochastic=True, learning_rate=0.1, test=False):
         optimizer = torch.optim.Adam([self.U], lr=learning_rate)
         loss_values = []
         error_values = []
@@ -63,19 +69,18 @@ class DiscreteController:
 
             if test:
                 # and int(100*step_index/n_steps)%10 == 0:
-                # test_loss, error = self.test(batch_size)
-                test_loss, error = self.test_batch(batch_size)
+                test_loss, error = self.test(batch_size)
+                # test_loss, error = self.test_batch(batch_size)
                 
             
                 loss_values.append(test_loss.item())
                 error_values.append(error.item())
 
             x = torch.zeros(batch_size, self.d)
-            X, U = self.forward(x, certainty)
+            X, U = self.forward(x, stochastic)
             X_data = self.X_data.unsqueeze(0).expand(batch_size, -1, -1)
             # print(f'{X_data.shape}, {X.shape}')
-            # X_total = torch.cat((X_data, X), dim=1)
-            X_total = X
+            X_total = torch.cat((X_data, X), dim=1)
             S = torch.linalg.svdvals(X_total[:, :-1, :])
             # print(S.min())
             loss = self.criterion(S, self.T)
@@ -84,8 +89,8 @@ class DiscreteController:
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-            self.U.data = self.gamma *np.sqrt(self.T) * self.U / torch.norm(self.U)
 
+            self.U.data = self.gamma *np.sqrt(self.T) * self.U / torch.norm(self.U)
             
         return loss_values, error_values
 
@@ -127,8 +132,11 @@ class DiscreteController:
 
             A_hat = estimate(X.squeeze(), U)
             error = torch.linalg.norm(A_hat - self.A)
-
+            energy = torch.sum(U**2)/ self.T
+            # print(f'X.shape {X.shape}, energy {energy}, A = {self.A}, A_hat = {A_hat}')
+            # print(f'error {error}')
             return test_loss, error
+
     def test_batch(self, batch_size):
         with torch.no_grad():
             x = torch.zeros(batch_size, self.d)
@@ -150,6 +158,3 @@ class DiscreteController:
             return test_loss, error
 
         
-    
-
-
