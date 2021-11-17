@@ -11,9 +11,9 @@ from discrete_controller import DiscreteController
 
 T0 = 100
 n_samples = 200
-gamma = 10
-sigma = 1
-n_gradient = 300
+gamma = 1
+sigma = 0.5
+n_gradient = 200
 batch_size = 100
 d = 4
 B = torch.eye(d)
@@ -29,14 +29,16 @@ if __name__ == '__main__':
     # args = arg_parser.parse_args()
     # optimality = args.optimality
     # task_id = args.task_id
-    # certainty = args.certainty
+    # certainty = args.certainty        
     task_id = sys.argv[1]
-    arg_1 = int(str(task_id)[0])
-    arg_2 = int(str(task_id)[1])
-    optimality = ['A', 'D', 'E', 'L', 'T'][arg_1-1]
-    stochastic = (arg_2%2 == 0)
+    # arg_1 = int(str(task_id)[0])
+    # arg_2 = int(str(task_id)[1])
+    # optimality = ['A', 'D', 'E', 'L', 'T'][arg_1-1]
+    optimality = 'E'
+    stochastic = (task_id%2 == 0)
 
     print(f'{n_samples} samples, task {task_id}, optimality {optimality}, stochastic={stochastic}')
+    print(f'gamma {gamma}, sigma={sigma}')
 
     output = {}
     loss_values = np.zeros((n_samples, n_gradient))
@@ -44,8 +46,6 @@ if __name__ == '__main__':
     for sample_index in tqdm(range(n_samples)):
         print(f'sample {sample_index}')
 
-
-        A = generate_random_A(d)
         A = generate_random_A(d)
         controller = DiscreteController(
             A, B, T0, gamma, sigma, optimality=optimality)
