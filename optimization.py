@@ -34,9 +34,9 @@ if __name__ == '__main__':
     arg_1 = int(str(task_id)[0])
     arg_2 = int(str(task_id)[1])
     optimality = ['A', 'D', 'E', 'L', 'T'][arg_1-1]
-    certainty = (arg_2%2 == 0)
+    stochastic = (arg_2%2 == 0)
 
-    print(f'{n_samples} samples, task {task_id}, optimality {optimality}, certainty={certainty}')
+    print(f'{n_samples} samples, task {task_id}, optimality {optimality}, stochastic={stochastic}')
 
     output = {}
     loss_values = np.zeros((n_samples, n_gradient))
@@ -53,7 +53,7 @@ if __name__ == '__main__':
             n_gradient,
             batch_size,
             learning_rate=learning_rate,    
-            certainty=certainty,
+            stochastic=stochastic,
             test=True
         )
         loss_values[sample_index, :] = sample_loss
@@ -62,7 +62,7 @@ if __name__ == '__main__':
     output['loss'] = loss_values
     output['error'] = error_values
     output['optimality'] = optimality
-    output['certainty'] = certainty
+    output['stochastic'] = stochastic
     
 
 
