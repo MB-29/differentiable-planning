@@ -57,8 +57,9 @@ class DiscreteController:
         return self.play(x, A, U)
 
     def play_random(self, x, A):
-        U = self.gamma * torch.randn(self.T, self.m) / np.sqrt(self.m)
-        return self.play(x, A, U)
+        U = torch.randn(self.T, self.m)
+        U_normalized = self.gamma * np.sqrt(self.T) * U / torch.norm(U)
+        return self.play(x, A, U_normalized)
         
     
     def plan(self, n_steps, batch_size, stochastic=True, learning_rate=0.1, test=False):
