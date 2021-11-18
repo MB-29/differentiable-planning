@@ -9,7 +9,7 @@ import argparse
 from utils import generate_random_A
 from discrete_controller import DiscreteController
 
-T0 = 100
+T0 = 20
 n_samples = 500
 gamma = 1
 sigma = 1
