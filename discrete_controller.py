@@ -6,7 +6,7 @@ os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 import numpy as np
 import torch
 
-from utils import criteria, estimate, estimate_batch
+from utils import criteria, estimate, estimate_batch, gramian
 from adjoint import Evaluation
 
 
@@ -27,6 +27,8 @@ class DiscreteController:
         # self.U = torch.ones(self.T, self.m, requires_grad=True)
 
         self.criterion = criteria.get(optimality)
+
+        self.gramian = gramian(A, T)
 
 
     def forward(self, x, stochastic=True):
@@ -63,6 +65,8 @@ class DiscreteController:
         
     
     def plan(self, n_steps, batch_size, stochastic=True, learning_rate=0.1, test=False):
+        if not stochastic:
+            return self.plan_certainty(n_steps, batch_size, learning_rate, test)
         optimizer = torch.optim.Adam([self.U], lr=learning_rate)
         loss_values = []
         error_values = []
@@ -82,7 +86,43 @@ class DiscreteController:
             X_data = self.X_data.unsqueeze(0).expand(batch_size, -1, -1)
             # print(f'{X_data.shape}, {X.shape}')
             X_total = torch.cat((X_data, X), dim=1)
+            
             S = torch.linalg.svdvals(X_total[:, :-1, :])
+            # print(S.min())
+            loss = self.criterion(S, self.T)
+            # print(f'loss {loss}')
+
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+
+            self.U.data = self.gamma *np.sqrt(self.T) * self.U / torch.norm(self.U)
+            
+        return loss_values, error_values
+
+    def plan_certainty(self, n_steps, batch_size, learning_rate=0.1, test=False):
+        optimizer = torch.optim.Adam([self.U], lr=learning_rate)
+        loss_values = []
+        error_values = []
+        for step_index in range(n_steps):
+
+            if test:
+                # and int(100*step_index/n_steps)%10 == 0:
+                test_loss, error = self.test(batch_size)
+                # test_loss, error = self.test_batch(batch_size)
+                
+            
+                loss_values.append(test_loss.item())
+                error_values.append(error.item())
+
+            x = torch.zeros(1, self.d)
+            X, U = self.forward(x, False)
+            X = X.squeeze()
+            M = X.T @ X
+            M += (self.sigma**2) * self.gramian
+
+            S = torch.linalg.eigvals(M).unsqueeze(0)
+            S, _ = torch.sort(torch.real(S), descending=True)
             # print(S.min())
             loss = self.criterion(S, self.T)
             # print(f'loss {loss}')

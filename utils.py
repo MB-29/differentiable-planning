@@ -38,3 +38,13 @@ def generate_random_A(d):
     eigenvals = torch.linalg.eigvals(M)
     rho = torch.abs(eigenvals).max()
     return M / rho
+
+def gramian(A, T):
+    matrix = 0
+    iterate = torch.eye(*A.size())
+    for t in range(T):
+        matrix += iterate @ iterate.T
+        iterate = A@iterate
+    return matrix
+
+
