@@ -19,13 +19,13 @@ d = 4
 B = torch.eye(d)
 learning_rate = 0.1
 
-A = torch.tensor([
+# A = torch.tensor([
 
-    [0.9, 1, 0, 0],
-    [0, 0.9, 1, 0],
-    [0, 0, 0.9, 1],
-    [0, 0, 0, 0.9],
-])
+#     [0.9, 1, 0, 0],
+#     [0, 0.9, 1, 0],
+#     [0, 0, 0.9, 1],
+#     [0, 0, 0, 0.9],
+# ])
 
 if __name__ == '__main__':
     # arg_parser = argparse.ArgumentParser()
@@ -52,7 +52,7 @@ if __name__ == '__main__':
     for sample_index in tqdm(range(n_samples)):
         print(f'sample {sample_index}')
 
-        # A = generate_random_A(d)
+        A = generate_random_A(d)
         controller = DiscreteController(
             A, B, T0, gamma, sigma, optimality=optimality)
         sample_loss, sample_error = controller.plan(
