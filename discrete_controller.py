@@ -77,8 +77,8 @@ class DiscreteController:
                 test_loss, error = self.test(batch_size)
                 # test_loss, error = self.test_batch(batch_size)
                 
-            
-                loss_values.append(test_loss.item())
+                
+                loss_values.append(test_loss)
                 error_values.append(error.item())
 
             x = torch.zeros(batch_size, self.d)
