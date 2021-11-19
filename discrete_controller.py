@@ -112,7 +112,7 @@ class DiscreteController:
                 # test_loss, error = self.test_batch(batch_size)
                 
             
-                loss_values.append(test_loss.item())
+                loss_values.append(test_loss)
                 error_values.append(error.item())
 
             x = torch.zeros(1, self.d)
@@ -167,7 +167,8 @@ class DiscreteController:
             X, U = self.play_control(x, self.A)
             # X, U = self.forward(x, False)
             S = torch.linalg.svdvals(X[:, :-1])
-            test_loss = self.criterion(S, self.T)
+            # test_loss = self.criterion(S, self.T)
+            test_loss = [S[0, -1], S[0, 0]]
             # M = X.permute(0, 2, 1) @ X.permute(0, 1, 2)
             # test_loss = - torch.log(torch.det(M)).mean()
 
