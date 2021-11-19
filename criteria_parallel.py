@@ -42,7 +42,7 @@ if __name__ == '__main__':
     arg_1 = int(str(task_id)[0])
     arg_2 = int(str(task_id)[1])
     optimality = ['A', 'D', 'E', 'L', 'T'][arg_1-1]
-    stochastic = (arg_2%2 == 0)
+    stochastic = True
     
     # optimality = 'E'
     # stochastic = (task_id%2 == 0)
