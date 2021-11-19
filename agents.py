@@ -56,7 +56,7 @@ class Agent:
             self.controller = controller(**args)
 
         n_gradient = self.epoch_index * self.n_gradient
-        self.controller.plan(self.n_gradient, self.batch_size)
+        self.controller.plan(n_gradient, self.batch_size)
 
     
     def play(self):
