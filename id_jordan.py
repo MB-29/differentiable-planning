@@ -10,7 +10,7 @@ from agents import Active, Oracle, Random
 T0 = 100
 n_samples = 2
 n_epochs = 7
-gamma = 100
+gamma = np.sqrt(1000)
 sigma = 1
 n_gradient = 100
 batch_size = 100
@@ -27,7 +27,7 @@ B = torch.eye(d)
 
 
 if __name__ == '__main__':
-    arg = sys.argv[1]
+    arg = sys.argv[1]   
     print(f'{n_samples} samples, arg {arg}')
     # agent_index = int(str(arg)[0])
     # criterion_index = int(str(arg)[1])

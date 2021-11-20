@@ -11,7 +11,7 @@ from utils import generate_random_A
 T0 = 100
 n_samples = 2
 n_epochs = 7
-gamma = 100
+gamma = np.sqrt(1000)
 sigma = 1
 n_gradient = 100
 batch_size = 100

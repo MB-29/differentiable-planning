@@ -64,7 +64,7 @@ class DiscreteController:
         return self.play(x, A, U_normalized)
         
     
-    def plan(self, n_steps, batch_size, stochastic=True, learning_rate=0.1, test=False):
+    def plan(self, n_steps, batch_size, stochastic=True, learning_rate=0.1, test=None):
         if not stochastic:
             return self.plan_certainty(n_steps, batch_size, learning_rate, test)
         optimizer = torch.optim.Adam([self.U], lr=learning_rate)
@@ -72,12 +72,12 @@ class DiscreteController:
         error_values = []
         for step_index in range(n_steps):
 
-            if test:
+            if test is not None:
                 # and int(100*step_index/n_steps)%10 == 0:
-                test_loss, error = self.test(batch_size)
+                test_loss, error = self.test(test, batch_size)
                 # test_loss, error = self.test_batch(batch_size)
                 
-                
+
                 loss_values.append(test_loss)
                 error_values.append(error.item())
 
@@ -100,15 +100,15 @@ class DiscreteController:
             
         return loss_values, error_values
 
-    def plan_certainty(self, n_steps, batch_size, learning_rate=0.1, test=False):
+    def plan_certainty(self, n_steps, batch_size, learning_rate=0.1, test=None):
         optimizer = torch.optim.Adam([self.U], lr=learning_rate)
         loss_values = []
         error_values = []
         for step_index in range(n_steps):
 
-            if test:
+            if test is not None:
                 # and int(100*step_index/n_steps)%10 == 0:
-                test_loss, error = self.test(batch_size)
+                test_loss, error = self.test(test, batch_size)
                 # test_loss, error = self.test_batch(batch_size)
                 
             
@@ -161,14 +161,16 @@ class DiscreteController:
         return loss_values, error_values
     
 
-    def test(self, batch_size):
+    def test(self, test_type, batch_size):
         with torch.no_grad():
             x = torch.zeros(1, self.d)
             X, U = self.play_control(x, self.A)
             # X, U = self.forward(x, False)
             S = torch.linalg.svdvals(X[:, :-1])
-            # test_loss = self.criterion(S, self.T)
-            test_loss = [S[0, -1], S[0, 0]]
+            if test_type == 'criterion':
+                test_loss = self.criterion(S, self.T)
+            elif test_type == 'sv':
+                test_loss = [S[0, -1], S[0, 0]]
             # M = X.permute(0, 2, 1) @ X.permute(0, 1, 2)
             # test_loss = - torch.log(torch.det(M)).mean()
 

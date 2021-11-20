@@ -43,7 +43,7 @@ def gramian(A, T):
     matrix = 0
     iterate = torch.eye(*A.size())
     for t in range(T):
-        matrix += iterate @ iterate.T
+        matrix += (T-t)*iterate @ iterate.T
         iterate = A@iterate
     return matrix
 
