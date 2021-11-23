@@ -68,8 +68,8 @@ if __name__ == '__main__':
             batch_size=batch_size,
             n_gradient=n_gradient,
             optimality=optimality,
-            rows=rows,
-            columns=columns
+            # rows=rows,
+            # columns=columns
         )
 
         sample_estimations = np.array(agent.identify(n_epochs)).squeeze()
@@ -82,7 +82,7 @@ if __name__ == '__main__':
         residuals[sample_index, :, :, :] = sample_residuals
     
 
-    output_name = f'id_force_partial_{n_samples}-samples_{n_gradient}-gradients_{n_epochs}-epochs_{arg}'
+    output_name = f'id_force_total_{n_samples}-samples_{n_gradient}-gradients_{n_epochs}-epochs_{arg}'
     
     with open(f'{output_name}.pkl', 'wb') as f:
         pickle.dump(residuals, f)
