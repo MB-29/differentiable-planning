@@ -36,7 +36,7 @@ if __name__ == '__main__':
     # optimality = ['A', 'D', 'E', 'L', 'T'][criterion_index-1]
     # print(f'agent type {agent_index-1}, optimality {optimality}')
     optimality = 'E'
-    agent_ = Oracle
+    agent_ = Active
 
     residuals = np.zeros((n_samples, n_epochs+1, d, d))
     for sample_index in range(n_samples):
@@ -59,7 +59,7 @@ if __name__ == '__main__':
     
 
 
-    output_name = f'jordan_{optimality}-optimality_{n_samples}-samples_{n_gradient}-gradients_{n_epochs}-epochs_{arg}'
+    output_name = f'active-jordan_{optimality}-optimality_{n_samples}-samples_{n_gradient}-gradients_{n_epochs}-epochs_{arg}'
     
     with open(f'{output_name}.pkl', 'wb') as f:
         pickle.dump(residuals, f)

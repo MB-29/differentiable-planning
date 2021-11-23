@@ -8,7 +8,7 @@ from tqdm import tqdm
 from agents import Active, Oracle, Random
 
 T0 = 20
-n_samples = 100
+n_samples = 10
 n_epochs = 3
 gamma = 1
 sigma = 0.1
