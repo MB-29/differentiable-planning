@@ -28,7 +28,6 @@ class Agent:
         self.y_data = torch.zeros(1, self.rows.sum())
 
         self.A_bar = A[self.rows][:, ~self.columns]
-        print(f'A_bar = {self.A_bar}')
 
         self.controller = DiscreteController(
             A,
@@ -105,7 +104,12 @@ class Agent:
         solution, _, _, _ = lstsq(self.x_data, self.y_data)
         estimation = solution.T
         self.A_tilde_hat = torch.tensor(estimation)
-        self.estimations.append(estimation.copy().reshape((1, self.rows.sum(), self.columns.sum())))
+        self.A_hat = self.A.clone()
+        for row in self.rows:
+            for column in self.columns:
+                self.A_hat[row, column]
+        self.A_hat[2:, :2] = self.A_tilde_hat
+        self.estimations.append(self.A_hat.numpy().copy().reshape((1, self.d, self.d)))
 
 
     def identify(self, n_steps):
