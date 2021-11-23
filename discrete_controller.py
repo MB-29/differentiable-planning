@@ -11,12 +11,15 @@ from adjoint import Evaluation
 
 
 class DiscreteController:
-    def __init__(self, A, B, T, gamma, sigma,  X_data=None, optimality=''):
+    def __init__(self, A, B, T, gamma, sigma, columns, X_data=None, optimality=''):
         super().__init__()
         self.T = T
         self.A = A
         self.B = B
         self.d, self.m = B.shape
+
+        self.columns = columns
+
         self.X_data = X_data if X_data is not None else torch.zeros(1, self.d)
         
 
@@ -63,7 +66,6 @@ class DiscreteController:
         U_normalized = self.gamma * np.sqrt(self.T) * U / torch.norm(U)
         return self.play(x, A, U_normalized)
         
-    
     def plan(self, n_steps, batch_size, stochastic=True, learning_rate=0.1, test=None):
         if not stochastic:
             return self.plan_certainty(n_steps, batch_size, learning_rate, test)
@@ -85,9 +87,9 @@ class DiscreteController:
             X, U = self.forward(x, stochastic)
             X_data = self.X_data.unsqueeze(0).expand(batch_size, -1, -1)
             # print(f'{X_data.shape}, {X.shape}')
-            X_total = torch.cat((X_data, X), dim=1)
-            
-            S = torch.linalg.svdvals(X_total[:, :-1, :])
+            X_total = torch.cat((X_data, X[:, :, self.columns]), dim=1)
+            S = torch.linalg.svdvals(X_total[:, :-1, ])
+            # print(S)
             # print(S.min())
             loss = self.criterion(S, self.T)
             # print(f'loss {loss}')
