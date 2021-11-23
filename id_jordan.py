@@ -9,10 +9,10 @@ from agents import Active, Oracle, Random
 
 T0 = 100
 n_samples = 1
-n_epochs = 5
+n_epochs = 7
 gamma = np.sqrt(1000)
 sigma = 1
-n_gradient = 300
+n_gradient = 100
 batch_size = 100
 
 A = torch.tensor([
