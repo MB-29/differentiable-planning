@@ -12,7 +12,7 @@ n_samples = 10
 n_epochs = 3
 gamma = 1
 sigma = 0.1
-n_gradient = 100
+n_gradient = 1
 batch_size = 100
 dt = 0.1
 
@@ -38,21 +38,18 @@ L = torch.linalg.eigvals(A)
 print(L)
 print(torch.abs(L).max())
 
-rows = torch.ones(d, dtype=torch.bool)
-columns = torch.ones(d, dtype=torch.bool)
-rows = torch.tensor([0, 0, 1, 1], dtype=torch.bool)
-columns = torch.tensor([1, 1, 0, 0], dtype=torch.bool)
 
+full = torch.tensor([1, 1, 1, 1], dtype=torch.bool)
+rows_partial = torch.tensor([0, 0, 1, 1], dtype=torch.bool)
+columns_partial = torch.tensor([1, 1, 0, 0], dtype=torch.bool)
 
 if __name__ == '__main__':
-    arg = sys.argv[1]   
-    print(f'{n_samples} samples, arg {arg}')
-    # agent_index = int(str(arg)[0])
-    # criterion_index = int(str(arg)[1])
-    # job_index = int(str(arg)[2])
-    # agent_ = [Active, Oracle][agent_index-1]  
-    # optimality = ['A', 'D', 'E', 'L', 'T'][criterion_index-1]
-    # print(f'agent type {agent_index-1}, optimality {optimality}')
+    task_id = int(sys.argv[1])
+    print(f'{n_samples} samples, task {task_id}')
+    partial = (task_id %2 == 0)
+    rows = rows_partial if partial else full
+    columns = columns_partial if partial else full
+
     optimality = 'E'
     agent_ = Oracle
 
@@ -68,8 +65,8 @@ if __name__ == '__main__':
             batch_size=batch_size,
             n_gradient=n_gradient,
             optimality=optimality,
-            # rows=rows,
-            # columns=columns
+            rows=rows,
+            columns=columns
         )
 
         sample_estimations = np.array(agent.identify(n_epochs)).squeeze()
@@ -82,7 +79,7 @@ if __name__ == '__main__':
         residuals[sample_index, :, :, :] = sample_residuals
     
 
-    output_name = f'id_force_total_{n_samples}-samples_{n_gradient}-gradients_{n_epochs}-epochs_{arg}'
+    output_name = f'id_force_{columns.sum()}_{n_samples}-samples_{n_gradient}-gradients_{n_epochs}-epochs_{task_id}'
     
     with open(f'{output_name}.pkl', 'wb') as f:
         pickle.dump(residuals, f)

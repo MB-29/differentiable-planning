@@ -21,13 +21,14 @@ class Agent:
         self.batch_size = batch_size
         self.n_gradient = n_gradient
 
-        self.partial = rows is not None or columns is not None
         self.rows = rows if rows is not None else torch.ones(self.d, dtype=torch.bool)
         self.columns = columns if columns is not None else torch.ones(self.d, dtype=torch.bool)
+        self.partial = rows is not None or columns is not None
+        
         self.x_data = torch.zeros(1, self.columns.sum())
         self.y_data = torch.zeros(1, self.rows.sum())
 
-        self.A_bar = A[self.rows][:, ~self.columns]
+        self.A_bar = A[2:, 2:]
 
         self.controller = DiscreteController(
             A,
@@ -84,7 +85,6 @@ class Agent:
 
     def update(self, X, U):
         if self.partial:
-            print('partial')
             return self.update_partial(X, U)
         Y = X[1:, :] - U@(self.B.T)
         self.x_data = torch.cat((self.x_data, X[:-1, :]), dim=0)
@@ -97,11 +97,13 @@ class Agent:
     def update_partial(self, X, U):
         
         Y = X[1:, :] - U@(self.B.T)
-        Y = Y[:, self.rows]
         self.x_data = torch.cat((self.x_data, X[:-1, self.columns]), dim=0)
-        X_bar = X[:-1, ~self.columns]
-        self.y_data = torch.cat((self.y_data, Y - X_bar@self.A_bar.T), dim=0)
-        solution, _, _, _ = lstsq(self.x_data, self.y_data)
+        self.y_data = torch.cat((self.y_data, Y[:, self.rows]), dim=0)
+        partial_planning = self.columns.sum() < self.d
+        X_bar = self.x_data if partial_planning else self.x_data[:, 2:]
+        X_tilde = self.x_data if partial_planning else self.x_data[:, :2]
+        Y_tilde = self.y_data if partial_planning else self.y_data[:, 2:]
+        solution, _, _, _ = lstsq(X_tilde, Y_tilde - X_bar@self.A_bar.T)
         estimation = solution.T
         self.A_tilde_hat = torch.tensor(estimation)
         self.A_hat = self.A.clone()
