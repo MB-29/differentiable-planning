@@ -25,8 +25,8 @@ class Agent:
         self.columns = columns if columns is not None else torch.ones(self.d, dtype=torch.bool)
         self.partial = rows is not None or columns is not None
         
-        self.x_data = torch.zeros(1, self.columns.sum())
-        self.y_data = torch.zeros(1, self.rows.sum())
+        self.x_data = torch.zeros(1, self.d)
+        self.y_data = torch.zeros(1, self.d)
 
         self.A_bar = A[2:, 2:]
 
@@ -49,7 +49,7 @@ class Agent:
         args = {
             'A': A_hat,
             'B': self.B,
-            'X_data': self.x_data,
+            'X_data': self.x_data[:, self.columns],
             'T': T,
             'gamma': self.gamma,
             'sigma': self.sigma,
@@ -97,17 +97,18 @@ class Agent:
     def update_partial(self, X, U):
         
         Y = X[1:, :] - U@(self.B.T)
-        self.x_data = torch.cat((self.x_data, X[:-1, self.columns]), dim=0)
-        self.y_data = torch.cat((self.y_data, Y[:, self.rows]), dim=0)
+        self.x_data = torch.cat((self.x_data, X[:-1, :]), dim=0)
+        self.y_data = torch.cat((self.y_data, Y[:, :]), dim=0)
         partial_planning = self.columns.sum() < self.d
-        X_bar = self.x_data if partial_planning else self.x_data[:, 2:]
-        X_tilde = self.x_data if partial_planning else self.x_data[:, :2]
-        Y_tilde = self.y_data if partial_planning else self.y_data[:, 2:]
+        X_bar = self.x_data[:, 2:]
+        X_tilde = self.x_data[:, :2]
+        Y_tilde = self.y_data[:, 2:]
         solution, _, _, _ = lstsq(X_tilde, Y_tilde - X_bar@self.A_bar.T)
         estimation = solution.T
         self.A_tilde_hat = torch.tensor(estimation)
         self.A_hat = self.A.clone()
         self.A_hat[2:, :2] = self.A_tilde_hat
+        print(self.A_hat - self.A)
         self.estimations.append(self.A_hat.numpy().copy().reshape((1, self.d, self.d)))
 
 

@@ -9,7 +9,7 @@ from agents import Active, Oracle, Random
 from utils import generate_random_A
 
 T0 = 100
-n_samples = 1
+n_samples = 100
 n_epochs = 7
 gamma = np.sqrt(1000)
 sigma = 1
@@ -31,6 +31,7 @@ if __name__ == '__main__':
     # print(f'agent type {agent_index-1}, optimality {optimality}')
     optimality = 'E'
     agent_ = Oracle
+    agent_ = Random
 
     residuals = np.zeros((n_samples, n_epochs+1, d, d))
     for sample_index in range(n_samples):
@@ -55,7 +56,7 @@ if __name__ == '__main__':
     
 
 
-    output_name = f'random_{optimality}-optimality_{n_samples}-samples_{n_gradient}-gradients_{n_epochs}-epochs_{arg}'
+    output_name = f'gaussian-random_{optimality}-optimality_{n_samples}-samples_{n_gradient}-gradients_{n_epochs}-epochs_{arg}'
     
     with open(f'{output_name}.pkl', 'wb') as f:
         pickle.dump(residuals, f)
