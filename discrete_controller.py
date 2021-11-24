@@ -1,3 +1,4 @@
+from scipy.linalg import lstsq
 import os
 
 
@@ -20,7 +21,7 @@ class DiscreteController:
 
         self.columns = columns
 
-        self.X_data = X_data if X_data is not None else torch.zeros(1, self.d)
+        self.X_data = X_data if X_data is not None else torch.zeros(1, self.columns.sum())
         
 
         self.gamma = gamma
@@ -88,7 +89,7 @@ class DiscreteController:
             X_data = self.X_data.unsqueeze(0).expand(batch_size, -1, -1)
             # print(f'{X_data.shape}, {X.shape}')
             X_total = torch.cat((X_data, X[:, :, self.columns]), dim=1)
-            S = torch.linalg.svdvals(X_total[:, :-1, ])
+            S = torch.linalg.svdvals(X_total[:, :-1])
             # print(S)
             # print(S.min())
             loss = self.criterion(S, self.T)
@@ -173,6 +174,21 @@ class DiscreteController:
                 test_loss = self.criterion(S, self.T)
             elif test_type == 'sv':
                 test_loss = [S[0, -1], S[0, 0]]
+            elif test_type == 'partial':
+
+                test_loss = torch.linalg.norm(X[:, -1, :2])
+
+                X_tilde = X.squeeze()[:-1, :2]
+                X_bar = X.squeeze()[:-1, 2:]
+                A_bar = self.A[2:, 2:]
+                A_tilde = self.A[2:, :2]
+                Y = (X.squeeze()[1:, :] - U@self.B.T)[:, 2:] - X_bar@A_bar.T
+                solution ,_, _, _ = lstsq(X_tilde, Y)
+                estimation = solution.T
+                # print(f'estimation {estimation}')
+                # print(f'A_tilde {A_tilde}')
+                error = np.linalg.norm(estimation - A_tilde.numpy())
+                return test_loss, error
             # M = X.permute(0, 2, 1) @ X.permute(0, 1, 2)
             # test_loss = - torch.log(torch.det(M)).mean()
 

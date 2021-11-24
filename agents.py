@@ -105,9 +105,6 @@ class Agent:
         estimation = solution.T
         self.A_tilde_hat = torch.tensor(estimation)
         self.A_hat = self.A.clone()
-        for row in self.rows:
-            for column in self.columns:
-                self.A_hat[row, column]
         self.A_hat[2:, :2] = self.A_tilde_hat
         self.estimations.append(self.A_hat.numpy().copy().reshape((1, self.d, self.d)))
 
