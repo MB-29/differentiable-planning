@@ -8,11 +8,11 @@ from tqdm import tqdm
 from agents import Active, Oracle, Random
 
 T0 = 20
-n_samples = 10
+n_samples = 100
 n_epochs = 3
-gamma = 1
-sigma = 0.1
-n_gradient = 1
+gamma = 10
+sigma = 1
+n_gradient = 100
 batch_size = 100
 dt = 0.1
 
@@ -78,9 +78,15 @@ if __name__ == '__main__':
         sample_residuals = sample_estimations - A.numpy()
         residuals[sample_index, :, :, :] = sample_residuals
     
-
+    output = {
+        'residuals': residuals,
+        'columns': {columns.sum()},
+        'gamma': gamma,
+        'sigma': sigma,
+        'T0': T0
+    }
     output_name = f'id_force_{columns.sum()}_{n_samples}-samples_{n_gradient}-gradients_{n_epochs}-epochs_{task_id}'
     
     with open(f'{output_name}.pkl', 'wb') as f:
-        pickle.dump(residuals, f)
+        pickle.dump(output, f)
 
