@@ -73,17 +73,17 @@ if __name__ == '__main__':
             optimality='E',
             columns=columns
             )
-        loss_values, error_values = controller.plan(
+        sample_loss, sample_error = controller.plan(
             n_steps,
             batch_size,
             learning_rate=learning_rate,
             test='partial'
             )
-        loss[:, sample_index] = loss_values
-        error[:, sample_index] = error_values
+        loss[:, sample_index] = sample_loss
+        error[:, sample_index] = sample_error
 
-    output['loss'] = loss_values
-    output['error'] = error_values
+    output['loss'] = loss
+    output['error'] = error
     output['optimality'] = 'E'
     output['gamma'] = gamma
     output['sigma'] = sigma
