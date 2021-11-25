@@ -13,7 +13,7 @@ n_samples = 100
 n_epochs = 7
 gamma = np.sqrt(1000)
 sigma = 1
-n_gradient = 100
+n_gradient = 200
 batch_size = 100
 
 d = 5
@@ -30,8 +30,8 @@ if __name__ == '__main__':
     # optimality = ['A', 'D', 'E', 'L', 'T'][criterion_index-1]
     # print(f'agent type {agent_index-1}, optimality {optimality}')
     optimality = 'E'
-    agent_ = Oracle
-    agent_ = Random
+    agent_ = Active
+    # agent_ = Random
 
     residuals = np.zeros((n_samples, n_epochs+1, d, d))
     for sample_index in range(n_samples):

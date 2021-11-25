@@ -12,7 +12,7 @@ n_samples = 100
 n_epochs = 7
 gamma = np.sqrt(1000)
 sigma = 1
-n_gradient = 100
+n_gradient = 200
 batch_size = 100
 
 A = torch.tensor([
@@ -37,7 +37,7 @@ if __name__ == '__main__':
     # print(f'agent type {agent_index-1}, optimality {optimality}')
     optimality = 'E'
     agent_ = Active
-    agent_ = Random
+    # agent_ = Random
 
     residuals = np.zeros((n_samples, n_epochs+1, d, d))
     for sample_index in range(n_samples):
