@@ -85,6 +85,7 @@ if __name__ == '__main__':
     output['loss'] = loss
     output['error'] = error
     output['optimality'] = 'E'
+    output['columns'] = columns
     output['gamma'] = gamma
     output['sigma'] = sigma
     output['T0'] = T
