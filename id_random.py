@@ -9,7 +9,7 @@ from agents import Active, Oracle, Random
 from utils import generate_random_A
 
 T0 = 100
-n_samples = 100
+n_samples = 1
 n_epochs = 7
 gamma = np.sqrt(1000)
 sigma = 1
