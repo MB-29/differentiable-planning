@@ -44,6 +44,8 @@ class Agent:
         self.estimations = []
         self.optimality = optimality
 
+        self.x = torch.zeros(self.d)
+
     
     def plan(self, A_hat, T):
         args = {
@@ -54,7 +56,8 @@ class Agent:
             'gamma': self.gamma,
             'sigma': self.sigma,
             'optimality': self.optimality,
-            'columns': self.columns
+            'columns': self.columns,
+            'x': self.x
         }
         controller = DiscreteController
         if self.net is not None :
@@ -93,6 +96,8 @@ class Agent:
         estimation = solution.T
         self.A_hat = torch.tensor(estimation)
         self.estimations.append(estimation.copy().reshape((1, self.d, self.d)))
+
+        self.x = X[-1, :]
 
     def update_partial(self, X, U):
         

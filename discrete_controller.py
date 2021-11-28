@@ -12,12 +12,13 @@ from adjoint import Evaluation
 
 
 class DiscreteController:
-    def __init__(self, A, B, T, gamma, sigma, columns, X_data=None, optimality=''):
+    def __init__(self, A, B, T, gamma, sigma, columns, x=None, X_data=None, optimality=''):
         super().__init__()
         self.T = T
         self.A = A
         self.B = B
         self.d, self.m = B.shape
+        self.x = torch.zeros(self.d) if x is None else x
 
         self.columns = columns
 
@@ -84,7 +85,7 @@ class DiscreteController:
                 loss_values.append(test_loss)
                 error_values.append(error.item())
 
-            x = torch.zeros(batch_size, self.d)
+            x = self.x.unsqueeze(0).expand(batch_size, self.d)
             X, U = self.forward(x, stochastic)
             X_data = self.X_data.unsqueeze(0).expand(batch_size, -1, -1)
             # print(f'{X_data.shape}, {X.shape}')
