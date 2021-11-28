@@ -12,7 +12,7 @@ from adjoint import Evaluation
 
 
 class DiscreteController:
-    def __init__(self, A, B, T, gamma, sigma, columns, x=None, X_data=None, optimality=''):
+    def __init__(self, A, B, T, gamma, sigma, columns=None, x=None, X_data=None, optimality=''):
         super().__init__()
         self.T = T
         self.A = A
@@ -20,7 +20,7 @@ class DiscreteController:
         self.d, self.m = B.shape
         self.x = torch.zeros(self.d) if x is None else x
 
-        self.columns = columns
+        self.columns = columns if columns is not None else torch.ones(self.d, dtype=torch.bool)
 
         self.X_data = X_data if X_data is not None else torch.zeros(1, self.columns.sum())
         

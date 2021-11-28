@@ -30,7 +30,7 @@ if __name__ == '__main__':
     # optimality = ['A', 'D', 'E', 'L', 'T'][criterion_index-1]
     # print(f'agent type {agent_index-1}, optimality {optimality}')
     optimality = 'E'
-    agent_ = Active
+    agent_ = Oracle
     # agent_ = Random
 
     residuals = np.zeros((n_samples, n_epochs+1, d, d))
@@ -56,7 +56,7 @@ if __name__ == '__main__':
     
 
 
-    output_name = f'gaussian-random_{optimality}-optimality_{n_samples}-samples_{n_gradient}-gradients_{n_epochs}-epochs_{arg}'
+    output_name = f'oracle-random_{optimality}-optimality_{n_samples}-samples_{n_gradient}-gradients_{n_epochs}-epochs_{arg}'
     
     with open(f'{output_name}.pkl', 'wb') as f:
         pickle.dump(residuals, f)
