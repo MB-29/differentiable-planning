@@ -9,8 +9,9 @@ from agents import Active, Oracle, Random
 
 T0 = 100
 n_samples = 1
-n_epochs = 7
+n_epochs = 3
 gamma = np.sqrt(1000)
+# gamma = 1
 sigma = 1
 n_gradient = 200
 batch_size = 100
@@ -36,7 +37,7 @@ if __name__ == '__main__':
     # optimality = ['A', 'D', 'E', 'L', 'T'][criterion_index-1]
     # print(f'agent type {agent_index-1}, optimality {optimality}')
     optimality = 'E'
-    agent_ = Active
+    agent_ = Oracle
     # agent_ = Random
 
     residuals = np.zeros((n_samples, n_epochs+1, d, d))
@@ -60,7 +61,7 @@ if __name__ == '__main__':
     
 
 
-    output_name = f'gaussian_jordan_{optimality}-optimality_{n_samples}-samples_{n_gradient}-gradients_{n_epochs}-epochs_{arg}'
+    output_name = f'oracle_jordan_{optimality}-optimality_{n_samples}-samples_{n_gradient}-gradients_{n_epochs}-epochs_{arg}'
     
     with open(f'{output_name}.pkl', 'wb') as f:
         pickle.dump(residuals, f)
