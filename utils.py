@@ -47,4 +47,15 @@ def gramian(A, T):
         iterate = A@iterate
     return matrix
 
+def toeplitz(A, T):
+    d, _ = A.shape
+    gamma = torch.zeros(T*d, T*d)
+    iterate = torch.eye(d)
+    for t in range(T):
+        for i in range(t, T):
+            j = i - t
+            gamma[d*i:d*(i+1), d*j: d*(j+1)] = iterate
+        iterate = A@iterate
+    return gamma
+
 

@@ -2,12 +2,13 @@ from scipy.linalg import lstsq
 import os
 
 
+
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
 import numpy as np
 import torch
 
-from utils import criteria, estimate, estimate_batch, gramian
+from utils import criteria, estimate, estimate_batch, gramian, toeplitz
 from adjoint import Evaluation
 
 
@@ -35,11 +36,26 @@ class DiscreteController:
 
         self.gramian = gramian(A, T)
 
+        self.covariates_matrix = toeplitz(A, T)
+
 
     def forward(self, x, stochastic=True):
         U = self.gamma * np.sqrt(self.T) * self.U / torch.norm(self.U)
         return self.integration(x, self.A, U, stochastic), U
+        # return self.integration(x, self.covariates_matrix, U, stochastic), U
 
+    def integration_(self, x, covariates, U, stochastic):
+        batch_size = x.shape[0]
+        X = x.unsqueeze(1).expand(-1, self.T+1, -1).clone()
+        control_input = (U@self.B.T).view(self.d*self.T)
+        control_X = (covariates_matrix@control_input).view(self.T, self.d)
+        X[:, 1:] += control_X.unsqueeze(0).expand(batch_size, -1, -1)
+        
+        if stochastic:
+            W = self.sigma * torch.randn(self.T*self.d, batch_size)
+            noise_X =  (self.covariates_matrix@W).reshape(batch_size, self.T, self.d)
+            X[:, 1:] += noise_X
+        return X
     def integration(self, x, A, U, stochastic):
         batch_size = x.shape[0]
         X = torch.zeros(batch_size, self.T+1, self.d)
@@ -57,6 +73,8 @@ class DiscreteController:
         # print(f'played mean energy {(U**2).sum() / self.T}')
         energy_constraint = (torch.sum(U**2) / self.T <= (self.gamma**2)*1.1)
         assert energy_constraint, f'energy constraint not met : mean energy {torch.sum(U**2) / self.T}'
+        covariates = toeplitz(A, self.T)
+        # return self.integration(x, covariates, U, stochastic=True), U
         return self.integration(x, A, U, stochastic=True), U
 
     def play_control(self, x, A):

@@ -82,8 +82,9 @@ class Agent:
     def play_random(self):
         self.batch = torch.zeros(1, self.d)
         self.controller.T = self.T
-        X, U = self.controller.play_random(
-            self.batch, self.A)
+        with torch.no_grad():
+            X, U = self.controller.play_random(
+                self.batch, self.A)
         return X, U
 
     def update(self, X, U):

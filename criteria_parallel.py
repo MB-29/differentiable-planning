@@ -41,7 +41,7 @@ if __name__ == '__main__':
 
     arg_1 = int(str(task_id)[0])
     arg_2 = int(str(task_id)[1])
-    optimality = ['A', 'D', 'E', 'L', 'T'][arg_1-1]
+    optimality = ['A', 'E', 'L'][arg_1-1]
     stochastic = True
     
     # optimality = 'E'
@@ -57,7 +57,7 @@ if __name__ == '__main__':
     for sample_index in tqdm(range(n_samples)):
         print(f'sample {sample_index}')
 
-        A = generate_random_A(d)
+        A = 0.5*generate_random_A(d)
         controller = DiscreteController(
             A, B, T0, gamma, sigma, optimality=optimality)
         sample_loss, sample_error = controller.plan(
