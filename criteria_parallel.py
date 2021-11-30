@@ -65,7 +65,7 @@ if __name__ == '__main__':
             batch_size,
             learning_rate=learning_rate,    
             stochastic=stochastic,
-            test=True
+            test='sv'
         )
         loss_values[sample_index, :, :] = np.array(sample_loss)
         error_values[sample_index, :] = sample_error
