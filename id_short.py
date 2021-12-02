@@ -11,7 +11,7 @@ from utils import generate_random_A
 n_samples = 20
 
 T0 = 100
-n_epochs = 2
+n_epochs = 3
 gamma = 5
 sigma = 1
 n_gradient = 1000
