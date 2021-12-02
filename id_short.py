@@ -8,7 +8,7 @@ from tqdm import tqdm
 from agents import Active, Oracle, Random
 from utils import generate_random_A
 
-n_samples = 20
+n_samples = 5
 
 T0 = 100
 n_epochs = 3
