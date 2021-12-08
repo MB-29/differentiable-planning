@@ -8,7 +8,7 @@ from discrete_controller import DiscreteController
 
 
 class Agent:
-    def __init__(self, A, B, T, gamma, sigma, batch_size, optimality=None, n_gradient=100, net=None, rows=None, columns=None):
+    def __init__(self, A, B, T, gamma, sigma, mean, cov, batch_size, optimality=None, n_gradient=100, net=None):
         self.A = A
         self.B = B
         self.net = net
@@ -21,14 +21,11 @@ class Agent:
         self.batch_size = batch_size
         self.n_gradient = n_gradient
 
-        self.rows = rows if rows is not None else torch.ones(self.d, dtype=torch.bool)
-        self.columns = columns if columns is not None else torch.ones(self.d, dtype=torch.bool)
-        self.partial = rows is not None or columns is not None
+        self.mean = mean #shape [d, d]
+        self.cov = cov #shape [d, d, d]
         
         self.x_data = torch.zeros(1, self.d)
         self.y_data = torch.zeros(1, self.d)
-
-        self.A_bar = A[2:, 2:]
 
         self.controller = DiscreteController(
             A,
@@ -36,9 +33,6 @@ class Agent:
             T,
             gamma=gamma,
             sigma=sigma,
-            X_data=self.x_data,
-            optimality=optimality,
-            columns=self.columns
             )
 
         self.estimations = []
@@ -51,12 +45,12 @@ class Agent:
         args = {
             'A': A_hat,
             'B': self.B,
-            'X_data': self.x_data[:, self.columns],
             'T': T,
             'gamma': self.gamma,
             'sigma': self.sigma,
             'optimality': self.optimality,
-            'columns': self.columns,
+            'mean': self.mean,
+            'cov': self.cov,
             'x': self.x
         }
         controller = DiscreteController
@@ -87,18 +81,29 @@ class Agent:
                 self.batch, self.A)
         return X, U
 
-    def update(self, X, U):
-        if self.partial:
-            return self.update_partial(X, U)
-        Y = X[1:, :] - U@(self.B.T)
+    def update(self, x_values, U):
+        self.x = x_values[-1, :]
+
+        Y = x_values[1:, :] - U@(self.B.T)
+        X = x_values[:-1, :]
+        least_squares, _, _, _ = lstsq(X, Y)
+
+        fisher_matrix = X.T @ X
+
+        for row_index in range(self.d):
+            cov = self.cov[row_index]
+            mean = self.mean[row_index]
+            estimation = least_squares[:, row_index]
+            posterior_cov = fisher_matrix + cov
+            posterior_precision = torch.linalg.inv(posterior_cov)
+            posterior_mean = posterior_precision @ (cov@mean + fisher_matrix@estimation)
+            self.mean[row_index, :] = posterior_mean
+       
+        self.estimations.append(self.mean.numpy().copy().reshape((1, self.d, self.d)))
+
+
         self.x_data = torch.cat((self.x_data, X[:-1, :]), dim=0)
         self.y_data = torch.cat((self.y_data, Y), dim=0)
-        solution, _, _, _ = lstsq(self.x_data, self.y_data)
-        estimation = solution.T
-        self.A_hat = torch.tensor(estimation)
-        self.estimations.append(estimation.copy().reshape((1, self.d, self.d)))
-
-        self.x = X[-1, :]
 
     def update_partial(self, X, U):
         
@@ -164,7 +169,7 @@ class Oracle(Agent):
 class Active(Agent):
 
     def timestep(self):
-        self.plan(self.A_hat.detach().clone().squeeze(), self.T)
+        self.plan(self.mean.clone(), self.T)
         X, U = self.play()
         self.update(X.squeeze(), U.squeeze())
 

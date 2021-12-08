@@ -13,7 +13,7 @@ from adjoint import Evaluation
 
 
 class DiscreteController:
-    def __init__(self, A, B, T, gamma, sigma, columns=None, x=None, X_data=None, optimality=''):
+    def __init__(self, A, B, T, gamma, sigma, mean=None, cov=None, x=None, optimality=''):
         super().__init__()
         self.T = T
         self.A = A
@@ -21,10 +21,12 @@ class DiscreteController:
         self.d, self.m = B.shape
         self.x = torch.zeros(self.d) if x is None else x
 
-        self.columns = columns if columns is not None else torch.ones(self.d, dtype=torch.bool)
+        self.mean = torch.zeros(self.d, self.d) if mean is None else mean
+        cov = torch.zeros(self.d, self.d, self.d)
+        for j in range(self.d):
+            cov[j] = torch.eye(self.d)
+        self.cov = torch.zeros(self.d, self.d) if cov is None else cov
 
-        self.X_data = X_data if X_data is not None else torch.zeros(1, self.columns.sum())
-        
 
         self.gamma = gamma
         self.sigma = sigma
@@ -99,16 +101,25 @@ class DiscreteController:
                 test_loss, error = self.test(test, batch_size)
                 # test_loss, error = self.test_batch(batch_size)
                 
-
                 loss_values.append(test_loss)
                 error_values.append(error.item())
 
             x = self.x.unsqueeze(0).expand(batch_size, self.d)
             X, U = self.forward(x, stochastic)
-            X_data = self.X_data.unsqueeze(0).expand(batch_size, -1, -1)
+            S = torch.zeros(batch_size, 0)
+            for row_index in range(self.d):
+                certain_indices = torch.diag(self.cov[row_index]) >= float("Inf")
+                prior_cov = self.cov[row_index,~certain_indices,~certain_indices].unsqueeze(0)
+                sliced_X = X[:, :, ~certain_indices]
+                fisher_matrix = sliced_X.permute(0, 2, 1)@sliced_X
+
+                posterior_cov = prior_cov.expand(batch_size, -1, -1) + fisher_matrix
+                eigenvalues = torch.linalg.eigvals(posterior_cov)
+                assert eigenvalues.shape[0] == batch_size
+                S = torch.cat((S, torch.real(eigenvalues)), dim=1)
+            S, _ = torch.sort(S, descending=True)
+
             # print(f'{X_data.shape}, {X.shape}')
-            X_total = torch.cat((X_data, X[:, :, self.columns]), dim=1)
-            S = torch.linalg.svdvals(X_total[:, :-1])
             # print(S)
             # print(S.min())
             loss = self.criterion(S, self.T)

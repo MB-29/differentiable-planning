@@ -7,9 +7,9 @@ from tqdm import tqdm
 
 from agents import Active, Oracle, Random
 
-T0 = 100
-n_samples = 1
-n_epochs = 7
+T0 = 10
+n_samples = 5
+n_epochs = 2
 gamma = np.sqrt(1000)
 # gamma = 1
 sigma = 1
@@ -26,7 +26,10 @@ A = torch.tensor([
 d = A.shape[0]
 B = torch.eye(d)
 
-
+mean = torch.zeros(d, d)
+cov = torch.zeros(d, d, d)
+for j in range(d):
+    cov[j] = torch.eye(d)
 if __name__ == '__main__':
     arg = sys.argv[1]   
     print(f'{n_samples} samples, arg {arg}')
@@ -51,7 +54,9 @@ if __name__ == '__main__':
             sigma=sigma,
             batch_size=batch_size,
             n_gradient=n_gradient,
-            optimality=optimality
+            optimality=optimality,
+            mean=mean,
+            cov=cov
         )
 
         sample_estimations = np.array(agent.identify(n_epochs)).squeeze()

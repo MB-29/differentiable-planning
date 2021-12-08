@@ -24,6 +24,10 @@ rho = 0.2
 
 B = torch.eye(m)
 
+mean = torch.zeros(d, d)
+cov = torch.zeros(d, d, d)
+for j in range(d):
+    cov[j] = torch.eye(d)
 
 if __name__ == '__main__':
     arg = sys.argv[1]   
@@ -52,7 +56,9 @@ if __name__ == '__main__':
             sigma=sigma,
             batch_size=batch_size,
             n_gradient=n_gradient,
-            optimality=optimality
+            optimality=optimality,
+            mean=mean,
+            cov=cov
         )
         start_time = time.time()
         sample_estimations = np.array(agent.identify(n_epochs)).squeeze()
