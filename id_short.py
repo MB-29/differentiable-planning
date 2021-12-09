@@ -27,7 +27,7 @@ B = torch.eye(m)
 mean = torch.zeros(d, d)
 cov = torch.zeros(d, d, d)
 for j in range(d):
-    cov[j] = torch.eye(d)
+    cov[j] = 1e4*torch.eye(d)
 
 if __name__ == '__main__':
     arg = sys.argv[1]   
