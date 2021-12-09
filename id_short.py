@@ -20,7 +20,7 @@ batch_size = 100
 d = 4
 m = 4
 optimality = 'E'
-rho = 0.2
+rho = 0.5
 
 B = torch.eye(m)
 
@@ -70,7 +70,7 @@ if __name__ == '__main__':
         sample_error = np.linalg.norm(sample_residuals, axis=(1, 2))
         error_values[sample_index, :] = sample_error
     
-    output={'op': error_values, 'time':time_values}
+    output={'op': error_values, 'time':time_values, 'rho':rho, 'sigma': sigma, 'gamma':gamma}
 
     output_name = f'oracle-random_{optimality}-optimality_{n_samples}-samples_{n_gradient}-gradients_{n_epochs}-epochs_{arg}'
     
