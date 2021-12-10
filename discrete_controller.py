@@ -13,7 +13,7 @@ from adjoint import Evaluation
 
 
 class DiscreteController:
-    def __init__(self, A, B, T, gamma, sigma, mean=None, cov=None, x=None, optimality=''):
+    def __init__(self, A, B, T, gamma, sigma, mean=None, precision=None, x=None, optimality=''):
         super().__init__()
         self.T = T
         self.A = A
@@ -22,10 +22,10 @@ class DiscreteController:
         self.x = torch.zeros(self.d) if x is None else x
 
         self.mean = torch.zeros(self.d, self.d) if mean is None else mean
-        cov = torch.zeros(self.d, self.d, self.d)
+        precision = torch.zeros(self.d, self.d, self.d)
         for j in range(self.d):
-            cov[j] = torch.eye(self.d)
-        self.cov = torch.zeros(self.d, self.d) if cov is None else cov
+            precision[j] = torch.eye(self.d)
+        self.precision = torch.zeros(self.d, self.d) if precision is None else precision
 
 
         self.gamma = gamma
@@ -108,13 +108,13 @@ class DiscreteController:
             X, U = self.forward(x, stochastic)
             S = torch.zeros(batch_size, 0)
             for row_index in range(self.d):
-                certain_indices = torch.diag(self.cov[row_index]) >= float("Inf")
-                prior_cov = self.cov[row_index,~certain_indices,~certain_indices].unsqueeze(0)
+                certain_indices = torch.diag(self.precision[row_index]) >= float("Inf")
+                prior_precision = self.precision[row_index,~certain_indices,~certain_indices].unsqueeze(0)
                 sliced_X = X[:, :, ~certain_indices]
                 fisher_matrix = sliced_X.permute(0, 2, 1)@sliced_X
 
-                posterior_cov = prior_cov.expand(batch_size, -1, -1) + fisher_matrix
-                eigenvalues = torch.linalg.eigvals(posterior_cov)
+                posterior_precision = prior_precision.expand(batch_size, -1, -1) + fisher_matrix
+                eigenvalues = torch.linalg.eigvals(posterior_precision)
                 assert eigenvalues.shape[0] == batch_size
                 S = torch.cat((S, torch.real(eigenvalues)), dim=1)
             S, _ = torch.sort(S, descending=True)

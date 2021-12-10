@@ -8,7 +8,7 @@ from discrete_controller import DiscreteController
 
 
 class Agent:
-    def __init__(self, A, B, T, gamma, sigma, mean, cov, batch_size, optimality=None, n_gradient=100, net=None):
+    def __init__(self, A, B, T, gamma, sigma, mean, precision, batch_size, optimality=None, n_gradient=100, net=None):
         self.A = A
         self.B = B
         self.net = net
@@ -22,7 +22,7 @@ class Agent:
         self.n_gradient = n_gradient
 
         self.mean = mean #shape [d, d]
-        self.cov = cov #shape [d, d, d]
+        self.precision = precision #shape [d, d, d]
         
         self.x_data = torch.zeros(1, self.d)
         self.y_data = torch.zeros(1, self.d)
@@ -50,7 +50,7 @@ class Agent:
             'sigma': self.sigma,
             'optimality': self.optimality,
             'mean': self.mean,
-            'cov': self.cov,
+            'precision': self.precision,
             'x': self.x
         }
         controller = DiscreteController
@@ -88,16 +88,18 @@ class Agent:
         X = x_values[:-1, :]
         least_squares, _, _, _ = lstsq(X, Y)
 
-        fisher_matrix = X.T @ X
+        covariates = X.T @ X
 
         for row_index in range(self.d):
-            cov = self.cov[row_index]
+            precision = self.precision[row_index]
             mean = self.mean[row_index]
             estimation = least_squares[:, row_index]
-            posterior_cov = fisher_matrix + cov
-            posterior_precision = torch.linalg.inv(posterior_cov)
-            posterior_mean = posterior_precision @ (cov@mean + fisher_matrix@estimation)
-            self.mean[row_index, :] = posterior_mean
+            posterior_precision = covariates + precision
+            posterior_cov = torch.linalg.inv(posterior_precision)
+            posterior_mean = posterior_cov @ (precision@mean + covariates@estimation)
+
+            self.mean[row_index] = posterior_mean
+            self.precision[row_index] = posterior_precision
        
         self.estimations.append(self.mean.numpy().copy().reshape((1, self.d, self.d)))
 
