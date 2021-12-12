@@ -109,7 +109,7 @@ class DiscreteController:
             S = torch.zeros(batch_size, 0)
             for row_index in range(self.d):
                 certain_indices = torch.diag(self.precision[row_index]) >= float("Inf")
-                prior_precision = self.precision[row_index,~certain_indices,~certain_indices].unsqueeze(0)
+                prior_precision = self.precision[row_index,~certain_indices][:,~certain_indices].unsqueeze(0)
                 sliced_X = X[:, :, ~certain_indices]
                 fisher_matrix = sliced_X.permute(0, 2, 1)@sliced_X
 
