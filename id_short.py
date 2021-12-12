@@ -8,7 +8,7 @@ from tqdm import tqdm
 from agents import Active, Oracle, Random
 from utils import generate_random_A
 
-n_samples = 1
+n_samples = 5
 
 T0 = 100
 n_epochs = 3
@@ -26,8 +26,8 @@ B = torch.eye(m)
 
 mean = torch.zeros(d, d)
 precision = torch.zeros(d, d, d)
-# for j in range(d):
-#     precision[j] = torch.eye(d)
+for j in range(d):
+    precision[j] = torch.eye(d)
 
 if __name__ == '__main__':
     arg = sys.argv[1]   
