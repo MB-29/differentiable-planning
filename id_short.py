@@ -27,7 +27,7 @@ B = torch.eye(m)
 mean = torch.zeros(d, d)
 precision = torch.zeros(d, d, d)
 for j in range(d):
-    precision[j] = 1e-4*torch.eye(d)
+    precision[j] = 1e-1*torch.eye(d)
 
 if __name__ == '__main__':
     arg = sys.argv[1]   
