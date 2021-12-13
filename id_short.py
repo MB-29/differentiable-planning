@@ -8,7 +8,7 @@ from tqdm import tqdm
 from agents import Active, Oracle, Random
 from utils import generate_random_A
 
-n_samples = 5
+n_samples = 1
 
 T0 = 100
 n_epochs = 3
@@ -27,7 +27,7 @@ B = torch.eye(m)
 mean = torch.zeros(d, d)
 precision = torch.zeros(d, d, d)
 for j in range(d):
-    precision[j] = torch.eye(d)
+    precision[j] = 1e-4*torch.eye(d)
 
 if __name__ == '__main__':
     arg = sys.argv[1]   
@@ -72,7 +72,7 @@ if __name__ == '__main__':
     
     output={'op': error_values, 'time':time_values, 'rho':rho, 'sigma': sigma, 'gamma':gamma}
 
-    output_name = f'oracle-random_{optimality}-optimality_{n_samples}-samples_{n_gradient}-gradients_{n_epochs}-epochs_{arg}'
+    output_name = f'active-random_{optimality}-optimality_{n_samples}-samples_{n_gradient}-gradients_{n_epochs}-epochs_{arg}'
     
     with open(f'{output_name}.pkl', 'wb') as f:
         pickle.dump(output, f)
