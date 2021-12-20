@@ -13,7 +13,7 @@ from discrete_controller import DiscreteController
 n_steps = 100
 batch_size = 100
 learning_rate = 0.1
-n_samples = 1
+n_samples = 100
 
 dt = 0.1
 
