@@ -47,7 +47,7 @@ prior_mean[2:, :2] = 0
 
 if __name__ == '__main__':
     task_id = int(sys.argv[1])
-    prior = True
+    prior = False
 
     prior_precision = torch.zeros(d, d, d)
     for j in range(d):
