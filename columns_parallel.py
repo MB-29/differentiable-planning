@@ -13,7 +13,7 @@ from discrete_controller import DiscreteController
 n_steps = 100
 batch_size = 100
 learning_rate = 0.1
-n_samples = 100
+n_samples = 1
 
 dt = 0.1
 
@@ -47,7 +47,7 @@ prior_mean[2:, :2] = 0
 
 if __name__ == '__main__':
     task_id = int(sys.argv[1])
-    prior = False
+    prior = bool(task_id%2)
 
     prior_precision = torch.zeros(d, d, d)
     for j in range(d):
