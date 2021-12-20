@@ -22,9 +22,6 @@ class DiscreteController:
         self.x = torch.zeros(self.d) if x is None else x
 
         self.mean = torch.zeros(self.d, self.d) if mean is None else mean
-        precision = torch.zeros(self.d, self.d, self.d)
-        for j in range(self.d):
-            precision[j] = torch.eye(self.d)
         self.precision = torch.zeros(self.d, self.d) if precision is None else precision
 
 
@@ -88,7 +85,7 @@ class DiscreteController:
         U_normalized = self.gamma * np.sqrt(self.T) * U / torch.norm(U)
         return self.play(x, A, U_normalized)
         
-    def plan(self, n_steps, batch_size, stochastic=True, learning_rate=0.1, test=None):
+    def plan(self, n_steps, batch_size, stochastic=True, learning_rate=0.1, test=None, prior=True):
         if not stochastic:
             return self.plan_certainty(n_steps, batch_size, learning_rate, test)
         optimizer = torch.optim.Adam([self.U], lr=learning_rate)
@@ -105,15 +102,16 @@ class DiscreteController:
                 error_values.append(error.item())
 
             x = self.x.unsqueeze(0).expand(batch_size, self.d)
-            X, U = self.forward(x, stochastic)
+            x_values, U = self.forward(x, stochastic)
+            X = x_values[:, :-1]
             S = torch.zeros(batch_size, 0)
             for row_index in range(self.d):
-                certain_indices = torch.diag(self.precision[row_index]) >= float("Inf")
-                prior_precision = self.precision[row_index,~certain_indices][:,~certain_indices].unsqueeze(0)
-                sliced_X = X[:, :, ~certain_indices]
-                fisher_matrix = sliced_X.permute(0, 2, 1)@sliced_X
-
-                posterior_precision = prior_precision.expand(batch_size, -1, -1) + fisher_matrix
+                # certain_indices = torch.diag(self.precision[row_index]) >= float("Inf")
+                prior_precision = self.precision[row_index].unsqueeze(0)
+                # sliced_X = X[:, :, ~certain_indices]
+                fisher_matrix = X.permute(0, 2, 1)@X
+                precision = prior_precision if prior else torch.zeros(1, self.d, self.d)
+                posterior_precision = precision.expand(batch_size, -1, -1) + fisher_matrix
                 eigenvalues = torch.linalg.eigvals(posterior_precision)
                 assert eigenvalues.shape[0] == batch_size
                 S = torch.cat((S, torch.real(eigenvalues)), dim=1)
@@ -197,7 +195,12 @@ class DiscreteController:
     def test(self, test_type, batch_size):
         with torch.no_grad():
             x = torch.zeros(1, self.d)
-            X, U = self.play_control(x, self.A)
+            x_values, U = self.play_control(x, self.A)
+            x_values = x_values.squeeze()
+            Y = x_values[1:, :] - U@(self.B.T)
+            X = x_values[:-1, :]
+            least_squares, _, _, _ = lstsq(X, Y)
+            covariates = X.T @ X
             # X, U = self.forward(x, False)
             S = torch.linalg.svdvals(X[:, :-1])
             if test_type == 'criterion':
@@ -206,18 +209,20 @@ class DiscreteController:
                 test_loss = [S[0, -1], S[0, 0]]
             elif test_type == 'partial':
 
-                test_loss = torch.linalg.norm(X[:, -1, :2])
+                test_loss = torch.linalg.norm(X[-1, :2])
+                A_hat = torch.zeros((self.d, self.d))
 
-                X_tilde = X.squeeze()[:-1, :2]
-                X_bar = X.squeeze()[:-1, 2:]
-                A_bar = self.A[2:, 2:]
-                A_tilde = self.A[2:, :2]
-                Y = (X.squeeze()[1:, :] - U@self.B.T)[:, 2:] - X_bar@A_bar.T
-                solution ,_, _, _ = lstsq(X_tilde, Y)
-                estimation = solution.T
+                for row_index in range(self.d):
+                    mean = self.mean[row_index]
+                    estimation = least_squares[:, row_index]
+                    precision = self.precision[row_index]
+                    posterior_precision = covariates + precision
+                    posterior_mean = torch.linalg.solve(posterior_precision, precision@mean + covariates@estimation)
+                    A_hat[row_index] = posterior_mean
+                # print(A_hat - self.A)
                 # print(f'estimation {estimation}')
                 # print(f'A_tilde {A_tilde}')
-                error = np.linalg.norm(estimation - A_tilde.numpy())
+                error = np.linalg.norm(A_hat - self.A.numpy())
                 return test_loss, error
             # M = X.permute(0, 2, 1) @ X.permute(0, 1, 2)
             # test_loss = - torch.log(torch.det(M)).mean()

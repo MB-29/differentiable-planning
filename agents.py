@@ -95,6 +95,8 @@ class Agent:
             mean = self.mean[row_index]
             estimation = least_squares[:, row_index]
             posterior_precision = covariates + precision
+            # print(f'covariates {covariates}')
+            # print(f'precision {precision}')
             posterior_mean = torch.linalg.solve(posterior_precision, precision@mean + covariates@estimation)
 
             self.mean[row_index] = posterior_mean

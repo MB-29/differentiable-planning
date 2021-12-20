@@ -38,17 +38,19 @@ L = torch.linalg.eigvals(A)
 print(L)
 print(torch.abs(L).max())
 
+prior_mean = A.clone()
+prior_mean[2:, :2] = 0
 
-full = torch.tensor([1, 1, 1, 1], dtype=torch.bool)
-rows_partial = torch.tensor([0, 0, 1, 1], dtype=torch.bool)
-columns_partial = torch.tensor([1, 1, 0, 0], dtype=torch.bool)
+prior_precision = torch.zeros(d, d, d)
+for j in range(d):
+    prior_precision[j] = 1e7*torch.eye(d)
+prior_precision[2][:2, :2] = 0
+prior_precision[3][:2, :2] = 0
 
 if __name__ == '__main__':
     task_id = int(sys.argv[1])
     print(f'{n_samples} samples, task {task_id}')
     partial = (task_id %2 == 0)
-    rows = rows_partial if partial else full
-    columns = columns_partial if partial else full
 
     optimality = 'E'
     agent_ = Oracle
@@ -65,8 +67,8 @@ if __name__ == '__main__':
             batch_size=batch_size,
             n_gradient=n_gradient,
             optimality=optimality,
-            rows=rows,
-            columns=columns
+            mean=prior_mean,
+            precision=prior_precision
         )
 
         sample_estimations = np.array(agent.identify(n_epochs)).squeeze()
@@ -80,12 +82,11 @@ if __name__ == '__main__':
     
     output = {
         'residuals': residuals,
-        'columns': {columns.sum()},
         'gamma': gamma,
         'sigma': sigma,
         'T0': T0
     }
-    output_name = f'id_force_{columns.sum()}_{n_samples}-samples_{n_gradient}-gradients_{n_epochs}-epochs_{task_id}'
+    output_name = f'id_force_{n_samples}-samples_{n_gradient}-gradients_{n_epochs}-epochs_{task_id}'
     
     with open(f'{output_name}.pkl', 'wb') as f:
         pickle.dump(output, f)
