@@ -36,7 +36,7 @@ B = torch.tensor([
 ])
 d = 4
 gamma = 10
-sigma = 1
+sigma = 0.1
 
 T = 50
 
