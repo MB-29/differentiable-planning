@@ -42,7 +42,8 @@ T = 50
 
 
 prior_mean = A.clone()
-prior_mean[2:, :2] = 0
+# prior_mean[2:, :2] = 0
+prior_mean[2, 0] = 0
 
 
 if __name__ == '__main__':
@@ -53,7 +54,7 @@ if __name__ == '__main__':
     for j in range(d):
         prior_precision[j] = 1e7*torch.eye(d)
     prior_precision[2][:2, :2] = 0
-    prior_precision[3][:2, :2] = 0
+    # prior_precision[3][:2, :2] = 0
 
 
     # for optimality in ['A', 'D', 'E', 'L']:

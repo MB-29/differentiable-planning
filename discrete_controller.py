@@ -209,7 +209,8 @@ class DiscreteController:
                 test_loss = [S[0, -1], S[0, 0]]
             elif test_type == 'partial':
 
-                test_loss = torch.linalg.norm(X[:-1, :2])
+                # test_loss = torch.linalg.norm(X[:-1, :2])
+                test_loss = torch.linalg.norm(X[:-1, 1])
                 A_hat = torch.zeros((self.d, self.d))
 
                 for row_index in range(self.d):
