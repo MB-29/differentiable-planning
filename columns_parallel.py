@@ -53,7 +53,8 @@ if __name__ == '__main__':
     prior_precision = torch.zeros(d, d, d)
     for j in range(d):
         prior_precision[j] = 1e7*torch.eye(d)
-    prior_precision[2][:2, :2] = 0
+    prior_precision[2][0, 0] = 0
+    # prior_precision[2][:2, :2] = 0
     # prior_precision[3][:2, :2] = 0
 
 
