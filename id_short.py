@@ -19,8 +19,8 @@ batch_size = 100
 
 d = 4
 m = 4
-optimality = 'E'
-rho = 0.5
+optimality = 'A'
+rho = 0.1
 
 B = torch.eye(m)
 
